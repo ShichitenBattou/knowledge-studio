@@ -16,5 +16,9 @@
     ],
     "tailwindCSS.classFunctions": [
         "defineAppConfig"
+    ],
+    "cSpell.words": [
+        "initdb",
+        "pglite"
     ]
 }

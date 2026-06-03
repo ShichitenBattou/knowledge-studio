@@ -15,6 +15,12 @@ const items = computed<NavigationMenuItem[]>(() => [
     to: '/about',
     icon: 'i-lucide-info',
     active: route.path.startsWith('/about')
+  },
+  {
+    label: 'PGlite',
+    to: '/pglite',
+    icon: 'i-lucide-database',
+    active: route.path.startsWith('/pglite')
   }
 ])
 
