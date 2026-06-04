@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  GREETING: Hello, world!
+
+tasks:
+  init:
+    desc: Initialize the project
+    cmds:
+      - eval "$(direnv hook bash)"
+      - direnv allow .
+    silent: true
