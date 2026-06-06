@@ -1,0 +1,71 @@
+name: Project Status Automation
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  update-project-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move linked issues to In Review
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_PROJECT_TOKEN }}
+          script: |
+            if (context.payload.pull_request.draft) return;
+
+            const prNumber = context.payload.pull_request.number;
+            const PROJECT_ID = 'PVT_kwHOA8mgws4BZy5H';
+            const FIELD_ID = 'PVTSSF_lAHOA8mgws4BZy5HzhUvGHg';
+            const IN_REVIEW_OPTION_ID = '60ab2b2e';
+
+            const result = await github.graphql(`
+              query($owner: String!, $repo: String!, $prNumber: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $prNumber) {
+                    closingIssuesReferences(first: 10) {
+                      nodes {
+                        number
+                        projectItems(first: 10) {
+                          nodes {
+                            id
+                            project { id }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            `, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              prNumber,
+            });
+
+            const issues = result.repository.pullRequest.closingIssuesReferences.nodes;
+
+            for (const issue of issues) {
+              for (const item of issue.projectItems.nodes) {
+                if (item.project.id !== PROJECT_ID) continue;
+                await github.graphql(`
+                  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                    updateProjectV2ItemFieldValue(input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { singleSelectOptionId: $optionId }
+                    }) {
+                      projectV2Item { id }
+                    }
+                  }
+                `, {
+                  projectId: PROJECT_ID,
+                  itemId: item.id,
+                  fieldId: FIELD_ID,
+                  optionId: IN_REVIEW_OPTION_ID,
+                });
+                console.log(`Issue #${issue.number} → In Review`);
+              }
+            }

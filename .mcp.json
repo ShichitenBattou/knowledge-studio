@@ -20,7 +20,9 @@
     "github": {
       "command": "github-mcp-server",
       "args": [
-        "stdio"
+        "stdio",
+        "--toolsets",
+        "default,projects"
       ]
     }
   }

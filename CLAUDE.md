@@ -4,9 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## ルール（厳守）
 
+### 常時有効にするMCP
+
+- **Serena MCP**: 作業開始前に必ず `mcp__serena__initial_instructions` を呼び出すこと
+
 ### 編集手順
 
-1. Serena MCPをアクティベートする
+1. ブランチを作成し、GitHub Projects MCPツールでIssueのステータスをIn Progressに変更する
+
+   - 下記コマンドでブランチを作成してチェックアウトする（<ISSUE_NUMBER>を置換）
+
+   ```bash
+   gh issue develop <ISSUE_NUMBER> --checkout
+   ```
+
+   - `projects_list`（list_project_items）でプロジェクト#3のアイテムIDを取得する
+   - `projects_write`（update_project_item）でStatusフィールド（ID: 355407992）をIn Progress（option_id: `47fc9ee4`）に更新する
 2. ADRを`docs/adr`配下に作成し認識合わせを行う。　※[ADRに関してのルール](#adrに関してのルール)を参照
 3. ADRのStatusをProposedにしてコミット
 4. 監理者にADRのチェック・フィードバックを依頼し、待機
@@ -18,12 +31,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 10. 監理者からの実装に関するフィードバックを反映する（ADRの修正が必要な場合は合わせて実施）
 11. 8~10を監理者の承諾が得られるまで継続
 12. 監理者の承諾が得られればADRのStatusをAcceptedに変更し、実装分とADRを合わせてコミット
+13. `mcp__github__create_pull_request`でPRを作成する。bodyの`Closes #<ISSUE_NUMBER>`は必須（自動遷移のトリガー）
+
+    - 通常PR（作成時にIn Reviewへ自動遷移）: `draft: false`
+    - ドラフトPR: `draft: true`で作成し、レビュー準備が整ったら`mcp__github__update_pull_request`で`draft: false`に更新→In Reviewへ自動遷移
 
 ### ADRに関してのルール
 
 - ファイル名は「<年月日>_<作業概要(英語で)>.md」とする
 - 下記の内容は必ず記載すること
-  - Context: 
   - Context: なぜこの決定が必要か（背景・問題・現状）
   - Decision: 何を採用するか / どう実装するか
   - Consequences: ポジティブ・ネガティブの両面

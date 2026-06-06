@@ -1,0 +1,46 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(git add:*)",
+            "Bash(git commit -m ':*)",
+            "Bash(cat *)",
+            "mcp__serena__initial_instructions",
+            "mcp__serena__get_symbols_overview",
+            "mcp__serena__find_symbol",
+            "mcp__serena__find_referencing_symbols",
+            "mcp__serena__find_implementations",
+            "mcp__serena__find_declaration",
+            "mcp__serena__replace_symbol_body",
+            "mcp__serena__replace_content",
+            "mcp__serena__insert_after_symbol",
+            "mcp__serena__insert_before_symbol",
+            "mcp__serena__safe_delete_symbol",
+            "mcp__serena__rename_symbol",
+            "mcp__serena__get_diagnostics_for_file",
+            "mcp__serena__list_memories",
+            "mcp__serena__read_memory",
+            "mcp__serena__write_memory",
+            "mcp__serena__edit_memory",
+            "mcp__serena__delete_memory",
+            "mcp__serena__rename_memory",
+            "mcp__serena__onboarding",
+            "mcp__serena__get_current_config",
+            "mcp__github__issue_write",
+            "mcp__github__projects_list",
+            "mcp__github__projects_get",
+            "mcp__github__projects_write",
+            "mcp__github__create_branch",
+            "mcp__github__create_pull_request",
+            "mcp__github__update_pull_request"
+        ],
+        "ask": [
+            "Bash(gh *)",
+            "Bash(python *)",
+            "Bash(python3 *)"
+        ]
+    },
+    "enableAllProjectMcpServers": true,
+    "enabledMcpjsonServers": [
+        "serena"
+    ]
+}
