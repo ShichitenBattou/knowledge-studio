@@ -22,7 +22,7 @@ const isBusy = computed(() => isCreating.value || isUpdating.value || isEmbeddin
 onMounted(async () => {
     await initializeKnowledgeDB()
     db.live.query<Note>(
-        'SELECT id, note, created_at FROM notes ORDER BY created_at DESC',
+        'SELECT id, note, created_at FROM notes ORDER BY created_at DESC NULLS LAST',
         [],
         (result) => { notes.splice(0, notes.length, ...result.rows) }
     )
