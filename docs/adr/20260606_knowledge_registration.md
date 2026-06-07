@@ -1,7 +1,7 @@
 # ADR: ナレッジ登録機能の実装
 
 - **Date**: 2026-06-06
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #4 ナレッジ登録
 
 ---
