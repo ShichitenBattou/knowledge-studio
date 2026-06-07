@@ -210,7 +210,7 @@ function formatDate(dateStr: string): string {
 
         <!-- ===== 登録セクション ===== -->
         <section class="mb-8">
-            <h2 class="text-lg font-semibold mb-4">ナレッジを登録</h2>
+            <h2 class="text-lg font-semibold mb-4">ナレッジ追加</h2>
             <UCard>
                 <UForm @submit.prevent="handleCreate">
                     <UFormField label="ナレッジ" class="mb-3">
