@@ -40,5 +40,14 @@ export async function initializeKnowledgeDB(): Promise<void> {
             created_at TIMESTAMPTZ DEFAULT now()
         );
         ALTER TABLE notes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+        CREATE TABLE IF NOT EXISTS tags (
+            id   UUID PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE IF NOT EXISTS note_tags (
+            note_id UUID NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+            tag_id  UUID NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
+            PRIMARY KEY (note_id, tag_id)
+        );
     `)
 }
