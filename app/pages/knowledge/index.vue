@@ -213,10 +213,10 @@ function formatDate(dateStr: string): string {
             <h2 class="text-lg font-semibold mb-4">ナレッジ追加</h2>
             <UCard>
                 <UForm @submit.prevent="handleCreate">
-                    <UFormField label="ナレッジ" class="mb-3">
+                    <UFormField label="内容" class="mb-3">
                         <UTextarea
                             v-model="newNote"
-                            placeholder="ナレッジを入力..."
+                            placeholder="知識・経験・気づきなど何でも"
                             :rows="4"
                             class="w-full"
                             :disabled="isBusy"
@@ -367,7 +367,7 @@ function formatDate(dateStr: string): string {
         <UModal v-model:open="isModalOpen" title="ナレッジを編集" :close="{ tabindex: -1 }">
             <template #body>
                 <UForm @submit.prevent="handleUpdate">
-                    <UFormField label="ナレッジ" class="mb-4">
+                    <UFormField label="内容" class="mb-4">
                         <UTextarea
                             ref="editNoteRef"
                             v-model="editingNote.note"
