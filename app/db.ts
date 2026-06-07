@@ -29,3 +29,16 @@ export const db: PGliteWithLive = await PGlite.create({
     },
     dataDir: 'idb://knowledge-studio-pglite'
 })
+
+export async function initializeKnowledgeDB(): Promise<void> {
+    await db.exec(`
+        CREATE EXTENSION IF NOT EXISTS vector;
+        CREATE TABLE IF NOT EXISTS notes (
+            id UUID PRIMARY KEY,
+            note TEXT NOT NULL,
+            embedding vector(384),
+            created_at TIMESTAMPTZ DEFAULT now()
+        );
+        ALTER TABLE notes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+    `)
+}
