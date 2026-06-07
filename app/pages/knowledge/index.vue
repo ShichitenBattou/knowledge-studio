@@ -30,6 +30,8 @@ const isUpdating = ref(false)
 const isTagManagerOpen = ref(false)
 const filterTags = ref<string[]>([])
 const editNoteRef = ref()
+const editingTagId = ref<string | null>(null)
+const editingTagNameInput = ref('')
 
 const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
 
@@ -143,7 +145,7 @@ function openEditModal(note: Note) {
     editingNote.tags = [...note.tags]
     editTagInput.value = ''
     isModalOpen.value = true
-    nextTick(() => editNoteRef.value?.textarea?.focus())
+    setTimeout(() => editNoteRef.value?.textarea?.focus(), 50)
 }
 
 async function handleUpdate() {
@@ -168,6 +170,28 @@ async function deleteNote(id: string) {
 async function deleteTag(tag: Tag) {
     await db.query('DELETE FROM tags WHERE id = $1', [tag.id])
     filterTags.value = filterTags.value.filter(t => t !== tag.name)
+}
+
+function startTagEdit(tag: Tag) {
+    editingTagId.value = tag.id
+    editingTagNameInput.value = tag.name
+}
+
+async function handleTagRename() {
+    const id = editingTagId.value
+    const name = editingTagNameInput.value.trim()
+    if (!id || !name) return
+    try {
+        await db.query('UPDATE tags SET name = $1 WHERE id = $2', [name, id])
+    } finally {
+        editingTagId.value = null
+        editingTagNameInput.value = ''
+    }
+}
+
+function cancelTagEdit() {
+    editingTagId.value = null
+    editingTagNameInput.value = ''
 }
 
 function toggleFilterTag(name: string) {
@@ -331,7 +355,7 @@ function formatDate(dateStr: string): string {
         </div>
 
         <!-- 編集モーダル -->
-        <UModal v-model:open="isModalOpen" title="ナレッジを編集">
+        <UModal v-model:open="isModalOpen" title="ナレッジを編集" :close="{ tabindex: -1 }">
             <template #body>
                 <UForm @submit.prevent="handleUpdate">
                     <UFormField label="ナレッジ" class="mb-4">
@@ -415,17 +439,27 @@ function formatDate(dateStr: string): string {
                     <li
                         v-for="tag in allTags"
                         :key="tag.id"
-                        class="flex items-center justify-between"
+                        class="flex items-center justify-between gap-2"
                     >
-                        <UBadge variant="outline" color="secondary">{{ tag.name }}</UBadge>
-                        <UButton
-                            size="sm"
-                            variant="ghost"
-                            color="error"
-                            icon="i-lucide-trash-2"
-                            aria-label="削除"
-                            @click="deleteTag(tag)"
-                        />
+                        <template v-if="editingTagId === tag.id">
+                            <UInput
+                                v-model="editingTagNameInput"
+                                size="sm"
+                                class="flex-1"
+                                autofocus
+                                @keydown.enter.prevent="handleTagRename"
+                                @keydown.escape.prevent="cancelTagEdit"
+                            />
+                            <UButton size="sm" variant="ghost" icon="i-lucide-check" aria-label="保存" @click="handleTagRename" />
+                            <UButton size="sm" variant="ghost" icon="i-lucide-x" aria-label="キャンセル" @click="cancelTagEdit" />
+                        </template>
+                        <template v-else>
+                            <UBadge variant="outline" color="secondary">{{ tag.name }}</UBadge>
+                            <div class="flex gap-1">
+                                <UButton size="sm" variant="ghost" icon="i-lucide-pencil" aria-label="編集" @click="startTagEdit(tag)" />
+                                <UButton size="sm" variant="ghost" color="error" icon="i-lucide-trash-2" aria-label="削除" @click="deleteTag(tag)" />
+                            </div>
+                        </template>
                     </li>
                 </ul>
             </template>
