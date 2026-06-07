@@ -17,6 +17,12 @@ const items = computed<NavigationMenuItem[]>(() => [
     active: route.path.startsWith('/about')
   },
   {
+    label: 'Knowledge',
+    to: '/knowledge',
+    icon: 'i-lucide-brain',
+    active: route.path.startsWith('/knowledge')
+  },
+  {
     label: 'PGlite',
     to: '/pglite',
     icon: 'i-lucide-database',
