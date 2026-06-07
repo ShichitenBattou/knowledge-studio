@@ -29,6 +29,7 @@ const isUpdating = ref(false)
 
 const isTagManagerOpen = ref(false)
 const filterTags = ref<string[]>([])
+const editNoteRef = ref()
 
 const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
 
@@ -142,6 +143,7 @@ function openEditModal(note: Note) {
     editingNote.tags = [...note.tags]
     editTagInput.value = ''
     isModalOpen.value = true
+    nextTick(() => editNoteRef.value?.textarea?.focus())
 }
 
 async function handleUpdate() {
@@ -264,7 +266,11 @@ function formatDate(dateStr: string): string {
                             variant="outline"
                             color="secondary"
                             class="cursor-pointer"
+                            tabindex="0"
+                            role="button"
                             @click="newNoteTags.push(tag.name); newTagInput = ''"
+                            @keydown.enter.prevent="newNoteTags.push(tag.name); newTagInput = ''"
+                            @keydown.space.prevent="newNoteTags.push(tag.name); newTagInput = ''"
                         >
                             + {{ tag.name }}
                         </UBadge>
@@ -330,6 +336,7 @@ function formatDate(dateStr: string): string {
                 <UForm @submit.prevent="handleUpdate">
                     <UFormField label="ナレッジ" class="mb-4">
                         <UTextarea
+                            ref="editNoteRef"
                             v-model="editingNote.note"
                             :rows="6"
                             class="w-full"
@@ -372,7 +379,11 @@ function formatDate(dateStr: string): string {
                                 variant="outline"
                                 color="secondary"
                                 class="cursor-pointer"
+                                tabindex="0"
+                                role="button"
                                 @click="editingNote.tags.push(tag.name); editTagInput = ''"
+                                @keydown.enter.prevent="editingNote.tags.push(tag.name); editTagInput = ''"
+                                @keydown.space.prevent="editingNote.tags.push(tag.name); editTagInput = ''"
                             >
                                 + {{ tag.name }}
                             </UBadge>
