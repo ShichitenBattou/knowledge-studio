@@ -1,7 +1,7 @@
 # ADR: タグ/分類機能の実装
 
 - **Date**: 2026-06-07
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #5 タグ/分類
 
 ---
