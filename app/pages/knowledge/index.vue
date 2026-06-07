@@ -207,152 +207,161 @@ function formatDate(dateStr: string): string {
 
 <template>
     <UContainer class="py-8 max-w-3xl">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold">ナレッジ登録</h1>
-            <UButton
-                v-if="allTags.length > 0"
-                variant="ghost"
-                size="sm"
-                icon="i-lucide-tag"
-                @click="isTagManagerOpen = true"
-            >
-                タグ管理
-            </UButton>
-        </div>
 
-        <!-- タグフィルタバー -->
-        <div v-if="allTags.length > 0" class="flex flex-wrap gap-2 mb-5">
-            <UBadge
-                v-for="tag in allTags"
-                :key="tag.id"
-                :variant="filterTags.includes(tag.name) ? 'solid' : 'outline'"
-                color="secondary"
-                class="cursor-pointer select-none"
-                @click="toggleFilterTag(tag.name)"
-            >
-                {{ tag.name }}
-            </UBadge>
-            <UButton
-                v-if="filterTags.length > 0"
-                variant="ghost"
-                size="xs"
-                @click="filterTags = []"
-            >
-                クリア
-            </UButton>
-        </div>
+        <!-- ===== 登録セクション ===== -->
+        <section class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">ナレッジを登録</h2>
+            <UCard>
+                <UForm @submit.prevent="handleCreate">
+                    <UFormField label="ナレッジ" class="mb-3">
+                        <UTextarea
+                            v-model="newNote"
+                            placeholder="ナレッジを入力..."
+                            :rows="4"
+                            class="w-full"
+                            :disabled="isBusy"
+                        />
+                    </UFormField>
+                    <UFormField label="タグ" class="mb-4">
+                        <div v-if="newNoteTags.length > 0" class="flex flex-wrap gap-1 mb-2">
+                            <UBadge
+                                v-for="tag in newNoteTags"
+                                :key="tag"
+                                variant="solid"
+                                color="primary"
+                            >
+                                {{ tag }}
+                                <button
+                                    type="button"
+                                    class="ml-1 opacity-60 hover:opacity-100"
+                                    @click="newNoteTags.splice(newNoteTags.indexOf(tag), 1)"
+                                >×</button>
+                            </UBadge>
+                        </div>
+                        <div class="flex gap-2">
+                            <UInput
+                                v-model="newTagInput"
+                                placeholder="タグ名を入力して Enter"
+                                class="flex-1"
+                                :disabled="isBusy"
+                                @keydown.enter.prevent="addNewTag"
+                            />
+                            <UButton type="button" variant="outline" size="sm" :disabled="!newTagInput.trim() || isBusy" @click="addNewTag">
+                                追加
+                            </UButton>
+                        </div>
+                        <div v-if="newTagSuggestions.length > 0" class="flex flex-wrap gap-1 mt-2">
+                            <span class="text-xs text-gray-400 w-full">既存タグ：</span>
+                            <UBadge
+                                v-for="tag in newTagSuggestions"
+                                :key="tag.id"
+                                variant="outline"
+                                color="secondary"
+                                class="cursor-pointer"
+                                tabindex="0"
+                                role="button"
+                                @click="newNoteTags.push(tag.name); newTagInput = ''"
+                                @keydown.enter.prevent="newNoteTags.push(tag.name); newTagInput = ''"
+                                @keydown.space.prevent="newNoteTags.push(tag.name); newTagInput = ''"
+                            >
+                                + {{ tag.name }}
+                            </UBadge>
+                        </div>
+                    </UFormField>
+                    <UButton
+                        type="submit"
+                        :loading="isCreating || isEmbeddingLoading"
+                        :disabled="!newNote.trim() || isBusy"
+                    >
+                        保存
+                    </UButton>
+                </UForm>
+            </UCard>
+        </section>
 
-        <!-- 登録フォーム -->
-        <UCard class="mb-6">
-            <UForm @submit.prevent="handleCreate">
-                <UFormField label="ナレッジ" class="mb-3">
-                    <UTextarea
-                        v-model="newNote"
-                        placeholder="ナレッジを入力..."
-                        :rows="4"
-                        class="w-full"
-                        :disabled="isBusy"
-                    />
-                </UFormField>
-                <UFormField label="タグ" class="mb-4">
-                    <div v-if="newNoteTags.length > 0" class="flex flex-wrap gap-1 mb-2">
+        <USeparator class="mb-8" />
+
+        <!-- ===== 一覧セクション ===== -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">ナレッジ一覧</h2>
+                <UButton
+                    v-if="allTags.length > 0"
+                    variant="ghost"
+                    size="sm"
+                    icon="i-lucide-tag"
+                    @click="isTagManagerOpen = true"
+                >
+                    タグ管理
+                </UButton>
+            </div>
+
+            <!-- タグフィルタバー -->
+            <div v-if="allTags.length > 0" class="flex flex-wrap gap-2 mb-5">
+                <UBadge
+                    v-for="tag in allTags"
+                    :key="tag.id"
+                    :variant="filterTags.includes(tag.name) ? 'solid' : 'outline'"
+                    color="secondary"
+                    class="cursor-pointer select-none"
+                    @click="toggleFilterTag(tag.name)"
+                >
+                    {{ tag.name }}
+                </UBadge>
+                <UButton
+                    v-if="filterTags.length > 0"
+                    variant="ghost"
+                    size="xs"
+                    @click="filterTags = []"
+                >
+                    クリア
+                </UButton>
+            </div>
+
+            <!-- ナレッジカード -->
+            <div v-if="filteredNotes.length === 0" class="text-center text-gray-400 py-12">
+                {{ allNotes.length === 0 ? 'ナレッジが登録されていません' : 'フィルタ条件に一致するナレッジがありません' }}
+            </div>
+
+            <div class="space-y-3">
+                <UCard v-for="note in filteredNotes" :key="note.id">
+                    <div class="flex justify-between items-start gap-4">
+                        <p class="flex-1 text-sm whitespace-pre-wrap">{{ note.note }}</p>
+                        <div class="flex gap-1 shrink-0">
+                            <UButton
+                                size="sm"
+                                variant="ghost"
+                                icon="i-lucide-pencil"
+                                aria-label="編集"
+                                @click="openEditModal(note)"
+                            />
+                            <UButton
+                                size="sm"
+                                variant="ghost"
+                                color="error"
+                                icon="i-lucide-trash-2"
+                                aria-label="削除"
+                                @click="deleteNote(note.id)"
+                            />
+                        </div>
+                    </div>
+                    <div v-if="note.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
                         <UBadge
-                            v-for="tag in newNoteTags"
+                            v-for="tag in note.tags"
                             :key="tag"
-                            variant="solid"
-                            color="primary"
+                            variant="subtle"
+                            color="secondary"
+                            size="sm"
                         >
                             {{ tag }}
-                            <button
-                                type="button"
-                                class="ml-1 opacity-60 hover:opacity-100"
-                                @click="newNoteTags.splice(newNoteTags.indexOf(tag), 1)"
-                            >×</button>
                         </UBadge>
                     </div>
-                    <div class="flex gap-2">
-                        <UInput
-                            v-model="newTagInput"
-                            placeholder="タグ名を入力して Enter"
-                            class="flex-1"
-                            :disabled="isBusy"
-                            @keydown.enter.prevent="addNewTag"
-                        />
-                        <UButton type="button" variant="outline" size="sm" :disabled="!newTagInput.trim() || isBusy" @click="addNewTag">
-                            追加
-                        </UButton>
-                    </div>
-                    <div v-if="newTagSuggestions.length > 0" class="flex flex-wrap gap-1 mt-2">
-                        <span class="text-xs text-gray-400 w-full">既存タグ：</span>
-                        <UBadge
-                            v-for="tag in newTagSuggestions"
-                            :key="tag.id"
-                            variant="outline"
-                            color="secondary"
-                            class="cursor-pointer"
-                            tabindex="0"
-                            role="button"
-                            @click="newNoteTags.push(tag.name); newTagInput = ''"
-                            @keydown.enter.prevent="newNoteTags.push(tag.name); newTagInput = ''"
-                            @keydown.space.prevent="newNoteTags.push(tag.name); newTagInput = ''"
-                        >
-                            + {{ tag.name }}
-                        </UBadge>
-                    </div>
-                </UFormField>
-                <UButton
-                    type="submit"
-                    :loading="isCreating || isEmbeddingLoading"
-                    :disabled="!newNote.trim() || isBusy"
-                >
-                    保存
-                </UButton>
-            </UForm>
-        </UCard>
-
-        <!-- ナレッジ一覧 -->
-        <div v-if="filteredNotes.length === 0" class="text-center text-gray-400 py-12">
-            {{ allNotes.length === 0 ? 'ナレッジが登録されていません' : 'フィルタ条件に一致するナレッジがありません' }}
-        </div>
-
-        <div class="space-y-3">
-            <UCard v-for="note in filteredNotes" :key="note.id">
-                <div class="flex justify-between items-start gap-4">
-                    <p class="flex-1 text-sm whitespace-pre-wrap">{{ note.note }}</p>
-                    <div class="flex gap-1 shrink-0">
-                        <UButton
-                            size="sm"
-                            variant="ghost"
-                            icon="i-lucide-pencil"
-                            aria-label="編集"
-                            @click="openEditModal(note)"
-                        />
-                        <UButton
-                            size="sm"
-                            variant="ghost"
-                            color="error"
-                            icon="i-lucide-trash-2"
-                            aria-label="削除"
-                            @click="deleteNote(note.id)"
-                        />
-                    </div>
-                </div>
-                <div v-if="note.tags.length > 0" class="flex flex-wrap gap-1 mt-2">
-                    <UBadge
-                        v-for="tag in note.tags"
-                        :key="tag"
-                        variant="subtle"
-                        color="secondary"
-                        size="sm"
-                    >
-                        {{ tag }}
-                    </UBadge>
-                </div>
-                <template #footer>
-                    <span class="text-xs text-gray-400">{{ formatDate(note.created_at) }}</span>
-                </template>
-            </UCard>
-        </div>
+                    <template #footer>
+                        <span class="text-xs text-gray-400">{{ formatDate(note.created_at) }}</span>
+                    </template>
+                </UCard>
+            </div>
+        </section>
 
         <!-- 編集モーダル -->
         <UModal v-model:open="isModalOpen" title="ナレッジを編集" :close="{ tabindex: -1 }">
@@ -464,5 +473,6 @@ function formatDate(dateStr: string): string {
                 </ul>
             </template>
         </UModal>
+
     </UContainer>
 </template>
