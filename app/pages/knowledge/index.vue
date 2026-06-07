@@ -247,7 +247,7 @@ function formatDate(dateStr: string): string {
                                 @keydown.enter.prevent="addNewTag"
                             />
                             <UButton type="button" variant="outline" size="sm" :disabled="!newTagInput.trim() || isBusy" @click="addNewTag">
-                                追加
+                                タグを追加
                             </UButton>
                         </div>
                         <div v-if="newTagSuggestions.length > 0" class="flex flex-wrap gap-1 mt-2">
@@ -401,7 +401,7 @@ function formatDate(dateStr: string): string {
                                 @keydown.enter.prevent="addEditTag"
                             />
                             <UButton type="button" variant="outline" size="sm" :disabled="!editTagInput.trim()" @click="addEditTag">
-                                追加
+                                タグを追加
                             </UButton>
                         </div>
                         <div v-if="editTagSuggestions.length > 0" class="flex flex-wrap gap-1 mt-2">
