@@ -23,7 +23,7 @@ async function handleCreate() {
     if (!text) return
     isCreating.value = true
     try {
-        await props.onCreate(text, newNoteTags.value)
+        await props.onCreate(text, [...newNoteTags.value])
         newNote.value = ''
         newNoteTags.value = []
         newTagInput.value = ''
