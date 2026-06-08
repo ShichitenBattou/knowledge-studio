@@ -68,6 +68,8 @@ function addEditTag() {
 const isTagManagerOpen = ref(false)
 const editingTagId = ref<string | null>(null)
 const editingTagNameInput = ref('')
+// tabindex はHTML属性として UButton に fallthrough するが ButtonProps の型定義に含まれないため
+const modalCloseProps = { tabindex: -1 } as Record<string, unknown>
 
 function toggleFilterTag(name: string) {
     const idx = filterTags.value.indexOf(name)
@@ -87,10 +89,15 @@ function startTagEdit(tag: Tag) {
 
 async function handleTagRename() {
     const id = editingTagId.value
-    const name = editingTagNameInput.value.trim()
-    if (!id || !name) return
+    const trimmedName = editingTagNameInput.value.trim()
+    if (!id || !trimmedName) return
+    const oldName = props.allTags.find(t => t.id === id)?.name
     try {
-        await props.onRenameTag(id, name)
+        await props.onRenameTag(id, trimmedName)
+        if (oldName && oldName !== trimmedName) {
+            const idx = filterTags.value.indexOf(oldName)
+            if (idx !== -1) filterTags.value.splice(idx, 1, trimmedName)
+        }
     } finally {
         editingTagId.value = null
         editingTagNameInput.value = ''
@@ -130,7 +137,12 @@ function formatDate(dateStr: string): string {
                 :variant="filterTags.includes(tag.name) ? 'solid' : 'outline'"
                 color="secondary"
                 class="cursor-pointer select-none"
+                tabindex="0"
+                role="button"
+                :aria-pressed="filterTags.includes(tag.name)"
                 @click="toggleFilterTag(tag.name)"
+                @keydown.enter.prevent="toggleFilterTag(tag.name)"
+                @keydown.space.prevent="toggleFilterTag(tag.name)"
             >
                 {{ tag.name }}
             </UBadge>
@@ -189,7 +201,7 @@ function formatDate(dateStr: string): string {
         </div>
 
         <!-- 編集モーダル -->
-        <UModal v-model:open="isModalOpen" title="ナレッジを編集" :close="{ tabindex: -1 }">
+        <UModal v-model:open="isModalOpen" title="ナレッジを編集" :close="modalCloseProps">
             <template #body>
                 <UForm @submit.prevent="handleUpdate">
                     <UFormField label="内容" class="mb-4">
@@ -213,6 +225,7 @@ function formatDate(dateStr: string): string {
                                 <button
                                     type="button"
                                     class="ml-1 opacity-60 hover:opacity-100"
+                                    :aria-label="`${tag}を削除`"
                                     @click="editingNote.tags.splice(editingNote.tags.indexOf(tag), 1)"
                                 >×</button>
                             </UBadge>
