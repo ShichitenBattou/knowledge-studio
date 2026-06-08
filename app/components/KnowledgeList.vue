@@ -98,9 +98,10 @@ async function handleTagRename() {
             const idx = filterTags.value.indexOf(oldName)
             if (idx !== -1) filterTags.value.splice(idx, 1, trimmedName)
         }
-    } finally {
         editingTagId.value = null
         editingTagNameInput.value = ''
+    } catch {
+        // 失敗時は編集状態を維持して再入力できるようにする
     }
 }
 

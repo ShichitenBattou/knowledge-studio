@@ -38,27 +38,28 @@ export function useKnowledge() {
         )
     })
 
-    async function getOrCreateTagId(name: string): Promise<string> {
-        const newId = crypto.randomUUID()
-        await db.query(
-            'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING',
-            [newId, name]
-        )
-        const result = await db.query<Tag>('SELECT id FROM tags WHERE name = $1', [name])
-        return result.rows[0]!.id
-    }
-
     async function saveTags(noteId: string, tagNames: string[]): Promise<void> {
-        await db.query('DELETE FROM note_tags WHERE note_id = $1', [noteId])
-        for (const name of tagNames) {
-            const trimmed = name.trim()
-            if (!trimmed) continue
-            const tagId = await getOrCreateTagId(trimmed)
-            await db.query(
-                'INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-                [noteId, tagId]
-            )
-        }
+        await db.transaction(async (tx) => {
+            await tx.query('DELETE FROM note_tags WHERE note_id = $1', [noteId])
+            for (const name of tagNames) {
+                const trimmed = name.trim()
+                if (!trimmed) continue
+                const newTagId = crypto.randomUUID()
+                await tx.query(
+                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING',
+                    [newTagId, trimmed]
+                )
+                const tagResult = await tx.query<{ id: string }>(
+                    'SELECT id FROM tags WHERE name = $1',
+                    [trimmed]
+                )
+                const tagId = tagResult.rows[0]!.id
+                await tx.query(
+                    'INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [noteId, tagId]
+                )
+            }
+        })
     }
 
     async function handleCreate(text: string, tagNames: string[]): Promise<void> {
