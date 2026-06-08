@@ -38,20 +38,21 @@ export function useKnowledge() {
         )
     })
 
-    async function saveTags(noteId: string, tagNames: string[]): Promise<void> {
+    async function handleCreate(text: string, tagNames: string[]): Promise<void> {
+        const noteId = crypto.randomUUID()
+        const embedding = await generateEmbedding(text)
         await db.transaction(async (tx) => {
+            await tx.query(
+                'INSERT INTO notes (id, note, embedding) VALUES ($1, $2, $3)',
+                [noteId, text, toPgVector(embedding)]
+            )
             await tx.query('DELETE FROM note_tags WHERE note_id = $1', [noteId])
             for (const name of tagNames) {
                 const trimmed = name.trim()
                 if (!trimmed) continue
-                const newTagId = crypto.randomUUID()
-                await tx.query(
-                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING',
-                    [newTagId, trimmed]
-                )
                 const tagResult = await tx.query<{ id: string }>(
-                    'SELECT id FROM tags WHERE name = $1',
-                    [trimmed]
+                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
+                    [crypto.randomUUID(), trimmed]
                 )
                 const tagId = tagResult.rows[0]!.id
                 await tx.query(
@@ -62,23 +63,28 @@ export function useKnowledge() {
         })
     }
 
-    async function handleCreate(text: string, tagNames: string[]): Promise<void> {
-        const noteId = crypto.randomUUID()
-        const embedding = await generateEmbedding(text)
-        await db.query(
-            'INSERT INTO notes (id, note, embedding) VALUES ($1, $2, $3)',
-            [noteId, text, toPgVector(embedding)]
-        )
-        await saveTags(noteId, tagNames)
-    }
-
     async function handleUpdate(id: string, text: string, tagNames: string[]): Promise<void> {
         const embedding = await generateEmbedding(text)
-        await db.query(
-            'UPDATE notes SET note = $1, embedding = $2 WHERE id = $3',
-            [text, toPgVector(embedding), id]
-        )
-        await saveTags(id, tagNames)
+        await db.transaction(async (tx) => {
+            await tx.query(
+                'UPDATE notes SET note = $1, embedding = $2 WHERE id = $3',
+                [text, toPgVector(embedding), id]
+            )
+            await tx.query('DELETE FROM note_tags WHERE note_id = $1', [id])
+            for (const name of tagNames) {
+                const trimmed = name.trim()
+                if (!trimmed) continue
+                const tagResult = await tx.query<{ id: string }>(
+                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
+                    [crypto.randomUUID(), trimmed]
+                )
+                const tagId = tagResult.rows[0]!.id
+                await tx.query(
+                    'INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                    [id, tagId]
+                )
+            }
+        })
     }
 
     async function deleteNote(id: string): Promise<void> {

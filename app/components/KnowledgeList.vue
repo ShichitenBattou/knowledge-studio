@@ -45,7 +45,7 @@ function openEditModal(note: Note) {
 async function handleUpdate() {
     isUpdating.value = true
     try {
-        await props.onUpdate(editingNote.id, editingNote.note, editingNote.tags)
+        await props.onUpdate(editingNote.id, editingNote.note, [...editingNote.tags])
         isModalOpen.value = false
     } finally {
         isUpdating.value = false
