@@ -89,7 +89,9 @@ export function useKnowledge() {
     }
 
     async function renameTag(id: string, name: string): Promise<void> {
-        await db.query('UPDATE tags SET name = $1 WHERE id = $2', [name, id])
+        const trimmed = name.trim()
+        if (!trimmed) return
+        await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
     }
 
     return {

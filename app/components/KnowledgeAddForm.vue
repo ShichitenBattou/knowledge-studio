@@ -69,6 +69,7 @@ function addNewTag() {
                         <button
                             type="button"
                             class="ml-1 opacity-60 hover:opacity-100"
+                            :aria-label="`${tag}を削除`"
                             @click="newNoteTags.splice(newNoteTags.indexOf(tag), 1)"
                         >×</button>
                     </UBadge>

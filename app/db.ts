@@ -49,5 +49,7 @@ export async function initializeKnowledgeDB(): Promise<void> {
             tag_id  UUID NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
             PRIMARY KEY (note_id, tag_id)
         );
+        CREATE INDEX IF NOT EXISTS note_tags_note_id_idx ON note_tags(note_id);
+        CREATE INDEX IF NOT EXISTS note_tags_tag_id_idx ON note_tags(tag_id);
     `)
 }
