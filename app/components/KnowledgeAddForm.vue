@@ -14,13 +14,9 @@ const isCreating = ref(false)
 
 const isBusy = computed(() => isCreating.value || props.isEmbeddingLoading)
 
-const newTagSuggestions = computed(() => {
-    const input = newTagInput.value.trim().toLowerCase()
-    return props.allTags.filter(t =>
-        !newNoteTags.value.includes(t.name) &&
-        (!input || t.name.toLowerCase().startsWith(input))
-    )
-})
+const newTagSuggestions = computed(() =>
+    props.allTags.filter(t => !newNoteTags.value.includes(t.name))
+)
 
 async function handleCreate() {
     const text = newNote.value.trim()
