@@ -46,7 +46,6 @@ export function useKnowledge() {
                 'INSERT INTO notes (id, note, embedding) VALUES ($1, $2, $3)',
                 [noteId, text, toPgVector(embedding)]
             )
-            await tx.query('DELETE FROM note_tags WHERE note_id = $1', [noteId])
             for (const name of tagNames) {
                 const trimmed = name.trim()
                 if (!trimmed) continue
