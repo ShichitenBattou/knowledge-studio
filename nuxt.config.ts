@@ -6,6 +6,6 @@ export default defineNuxtConfig({
   colorMode: {
     preference: 'dark',
   },
-  modules: ['@nuxt/ui'],
-  css: ['~/assets/css/main.css']
+  modules: ['@nuxt/ui', '@nuxt/eslint'],
+  css: ['~/assets/css/main.css'],
 })
