@@ -25,16 +25,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 4. 監理者にADRのチェック・フィードバックを依頼し、待機
 5. 監理者からのADRに関するフィードバックを反映し、コミット
 6. 4~5を監理者の承諾が得られるまで継続
-7. 監理者の承諾が得られれば実装(実行)する
-8. テストとフォーマッター/リンターを使用し、コードの品質を保つ
-9. 監理者に実装のチェック・フィードバックを依頼し、待機
-10. 監理者からの実装に関するフィードバックを反映する（ADRの修正が必要な場合は合わせて実施）
-11. 8~10を監理者の承諾が得られるまで継続
-12. 監理者の承諾が得られればADRのStatusをAcceptedに変更し、実装分とADRを合わせてコミット
-13. `mcp__github__create_pull_request`でPRを作成する。bodyの`Closes #<ISSUE_NUMBER>`は必須（自動遷移のトリガー）
-
-    - 通常PR（作成時にIn Reviewへ自動遷移）: `draft: false`
-    - ドラフトPR: `draft: true`で作成し、レビュー準備が整ったら`mcp__github__update_pull_request`で`draft: false`に更新→In Reviewへ自動遷移
+7. 監理者の承諾が得られればADRのStatusをAcceptedに変更しコミット
+8. ADRの内容に基づいて実装を行う
+9. 実装後、テストとフォーマッター/リンターを使用しコード品質を保つ（現在は未整備のため対応不要）
+10. `pr-creator` サブエージェントでPRを作成する（Issue番号を引数で渡す）
+    - ドラフトPRの場合はその旨を明示して指示する
+    - pr-creatorが自動でindex.json参照・Closes #・Reviewer指定を行う
+11. 監理者に実装のチェック・フィードバックを依頼し、待機
+12. 監理者からの実装に関するフィードバックを反映する（ADRの修正/テスト/フォーマットも実施すること）
+13. 11~12を監理者の承諾が得られるまで継続
 
 ### ADRに関してのルール
 
@@ -46,6 +45,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Alternatives Considered: 複数案を検討した場合は必須、1案しかない場合は省略可
   - Implementation Notes: 実装者向けの補足（省略可だが推奨）
 - フォーマット自体は自由、ただし最新のADRをフォーマットの参考にすること
+- 概要をまとめる為に「<年月日>_<作業概要(英語で)>.index.json」も作成すること
+  - jsonにはadrFile, title, status, summary, relatedFilesを含める事
+
+### その他のルール
+
+- Pythonのコードはuvを使って実行すること
+- ブランチ名は英語で記述すること
 
 ## コマンド
 
