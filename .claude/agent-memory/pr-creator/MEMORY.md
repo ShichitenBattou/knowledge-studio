@@ -1,0 +1,1 @@
+- [GitHub Context](github_context.md) — Repository, user, and PR creation technical details

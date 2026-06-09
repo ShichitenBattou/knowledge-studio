@@ -4,3 +4,4 @@ dist/
 .output/
 public/pglite/
 *.min.js
+.claude/agents/
