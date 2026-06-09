@@ -18,8 +18,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    gh issue develop <ISSUE_NUMBER> --checkout
    ```
 
-   - `projects_list`（list_project_items）でプロジェクト#3のアイテムIDを取得する
-   - `projects_write`（update_project_item）でStatusフィールド（ID: 355407992）をIn Progress（option_id: `47fc9ee4`）に更新する
+   - `.github/project.env` からプロジェクト設定値を読み込む（`PROJECT_NUMBER`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_STATUS_IN_PROGRESS_OPTION_ID`）
+   - `projects_list`（list_project_items）で対象プロジェクトのアイテムIDを取得する
+   - `projects_write`（update_project_item）でStatusフィールドをIn Progressに更新する
 2. ADRを`docs/adr`配下に作成し認識合わせを行う。　※[ADRに関してのルール](#adrに関してのルール)を参照
 3. ADRのStatusをProposedにしてコミット
 4. 監理者にADRのチェック・フィードバックを依頼し、待機

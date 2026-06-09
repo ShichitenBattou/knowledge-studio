@@ -45,7 +45,7 @@ Create a GitHub Pull Request by:
   - `Closes #<ISSUE_NUMBER>` (MANDATORY)
 
 ### Step 3: Determine Reviewers
-- The current user's GitHub login must be included as a reviewer. Retrieve it via `gh api user --jq .login` or from the known email `***REMOVED***` mapped to their GitHub account.
+- The current user's GitHub login must be included as a reviewer. Retrieve it via `gh api user --jq .login`.
 - Always include `Copilot` as a reviewer (GitHub Copilot code review)
 - Reviewer list: `["<current-user-login>", "Copilot"]`
 
@@ -94,7 +94,7 @@ Issue: Closes #<number>
 **Update your agent memory** as you discover project-specific patterns such as default branch names, GitHub owner/repo slugs, reviewer GitHub usernames, and ADR naming conventions. This builds up institutional knowledge across conversations.
 
 Examples of what to record:
-- The resolved GitHub username for the current user (***REMOVED*** → GitHub login)
+- The resolved GitHub username for the current user (retrieved via `gh api user --jq .login`)
 - The default base branch (`main` vs `master`)
 - The GitHub repository owner and name
 - Any recurring PR title formats or conventions observed
