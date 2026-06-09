@@ -50,9 +50,8 @@ Create a GitHub Pull Request by:
 
 ### Step 3: Determine Reviewers
 
-- The current user's GitHub login must be included as a reviewer. Retrieve it via `gh api user --jq .login`.
-- Always include `Copilot` as a reviewer (GitHub Copilot code review)
-- Reviewer list: `["<current-user-login>", "Copilot"]`
+- GitHub does not allow the PR author to be added as a reviewer — do not include the current user in the reviewers list.
+- Copilot code review must be requested via a dedicated API after PR creation; do NOT include `"Copilot"` in the `reviewers` array of `create_pull_request` (it will silently fail or error).
 
 ### Step 4: Create the PR
 
@@ -63,7 +62,8 @@ Create a GitHub Pull Request by:
   - `head`: current branch name
   - `base`: `main` (or `master` if that is the default branch)
   - `draft`: `false` unless the user explicitly requested a draft PR
-  - `reviewers`: list from Step 3
+  - `reviewers`: `[]` (empty — do not add the author; Copilot is handled separately)
+- After the PR is created, call `mcp__github__request_copilot_review` with the new PR number to request a Copilot code review.
 
 ### Step 5: Confirm and Report
 
@@ -73,7 +73,7 @@ Create a GitHub Pull Request by:
 ## Mandatory Rules (from CLAUDE.md)
 
 - `Closes #<ISSUE_NUMBER>` in the PR body is **non-negotiable** — it triggers automatic status transitions in GitHub Projects
-- Reviewer list must always include the current user AND Copilot
+- Copilot review must always be requested via `mcp__github__request_copilot_review` after PR creation (NOT via the reviewers array)
 - Branch name must be in English (verify; if it is not, warn the user before proceeding)
 - For draft PRs, after creation remind the user to update `draft: false` when ready for review
 
@@ -100,7 +100,7 @@ After successful PR creation, report:
 URL: <pr_url>
 タイトル: <title>
 Issue: Closes #<number>
-レビュワー: <user>, Copilot
+レビュワー: Copilot（request_copilot_review済み）
 ```
 
 **Update your agent memory** as you discover project-specific patterns such as default branch names, GitHub owner/repo slugs, reviewer GitHub usernames, and ADR naming conventions. This builds up institutional knowledge across conversations.
