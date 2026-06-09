@@ -65,6 +65,7 @@ devDependencies:
 ```
 
 lefthookのpre-commitフックは以下を実行する：
+
 1. `prettier --write` でステージ済みファイルを整形
 2. `eslint --fix` でステージ済みファイルをLint修正
 3. 修正済みファイルを再ステージ（`git add`）

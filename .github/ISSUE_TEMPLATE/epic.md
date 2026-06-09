@@ -1,9 +1,9 @@
 ---
 name: Epic
 about: 複数の関連機能をまとめるEpic
-title: "[Epic] "
+title: '[Epic] '
 labels: epic
-assignees: ""
+assignees: ''
 ---
 
 ## 概要
@@ -12,7 +12,7 @@ assignees: ""
 
 ## 子Issue一覧
 
-- [ ] 
+- [ ]
 
 ## 依存
 
