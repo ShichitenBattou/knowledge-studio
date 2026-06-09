@@ -1,7 +1,7 @@
 {
   "adrFile": "20260609_introduce_formatter_linter.md",
   "title": "フォーマッター/リンターの導入",
-  "status": "Proposed",
+  "status": "Accepted",
   "summary": "Prettier（フォーマッター）・@nuxt/eslint（リンター）・lefthook（Gitフック）を導入し、コードスタイルの統一と静的解析によるコード品質向上を実現する。コミット前に自動フォーマット・Lint修正が走るpre-commitフックを整備する。",
   "relatedFiles": [
     "package.json",

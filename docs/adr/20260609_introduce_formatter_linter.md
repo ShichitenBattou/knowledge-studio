@@ -1,7 +1,7 @@
 # ADR: フォーマッター/リンターの導入
 
 - **Date**: 2026-06-09
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #21 フォーマッター/リンターを導入
 
 ---
