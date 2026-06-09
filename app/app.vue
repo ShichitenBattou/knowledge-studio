@@ -8,28 +8,27 @@ const items = computed<NavigationMenuItem[]>(() => [
     label: 'Home',
     to: '/',
     icon: 'i-lucide-book-open',
-    active: route.path === '/'
+    active: route.path === '/',
   },
   {
     label: 'About',
     to: '/about',
     icon: 'i-lucide-info',
-    active: route.path.startsWith('/about')
+    active: route.path.startsWith('/about'),
   },
   {
     label: 'Knowledge',
     to: '/knowledge',
     icon: 'i-lucide-brain',
-    active: route.path.startsWith('/knowledge')
+    active: route.path.startsWith('/knowledge'),
   },
   {
     label: 'PGlite',
     to: '/pglite',
     icon: 'i-lucide-database',
-    active: route.path.startsWith('/pglite')
-  }
+    active: route.path.startsWith('/pglite'),
+  },
 ])
-
 </script>
 
 <template>
@@ -41,15 +40,20 @@ const items = computed<NavigationMenuItem[]>(() => [
         <UColorModeButton />
 
         <UTooltip text="Open on GitHub" :kbds="['meta', 'G']">
-          <UButton color="neutral" variant="ghost" to="https://github.com/" target="_blank" icon="i-simple-icons-github"
-            aria-label="GitHub" />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            to="https://github.com/"
+            target="_blank"
+            icon="i-simple-icons-github"
+            aria-label="GitHub"
+          />
         </UTooltip>
       </template>
 
       <template #body>
         <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
       </template>
-
     </UHeader>
 
     <UMain>

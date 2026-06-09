@@ -1,9 +1,9 @@
 ---
 name: PBI（プロダクトバックログアイテム）
 about: 実装すべき具体的な機能
-title: ""
+title: ''
 labels: PBI
-assignees: ""
+assignees: ''
 ---
 
 Epic: #
@@ -14,7 +14,7 @@ Epic: #
 
 ## 受け入れ条件
 
-- [ ] 
+- [ ]
 
 ## 依存関係
 

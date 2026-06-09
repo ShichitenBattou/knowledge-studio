@@ -1,9 +1,9 @@
 ---
 name: タスク（技術的改善）
 about: 機能開発以外の技術的タスク（設定・リファクタリング・CI/CDなど）
-title: ""
-labels: ""
-assignees: ""
+title: ''
+labels: ''
+assignees: ''
 ---
 
 ## 目的
@@ -12,7 +12,7 @@ assignees: ""
 
 ## 受け入れ条件
 
-- [ ] 
+- [ ]
 
 ## 補足
 

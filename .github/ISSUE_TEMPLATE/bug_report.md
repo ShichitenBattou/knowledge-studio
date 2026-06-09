@@ -1,9 +1,9 @@
 ---
 name: バグ報告
 about: 不具合を報告する
-title: "[Bug] "
+title: '[Bug] '
 labels: bug
-assignees: ""
+assignees: ''
 ---
 
 ## 概要
@@ -12,9 +12,9 @@ assignees: ""
 
 ## 再現手順
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## 期待する動作
 
@@ -26,9 +26,9 @@ assignees: ""
 
 ## 環境
 
-- OS: 
-- ブラウザ: 
-- バージョン: 
+- OS:
+- ブラウザ:
+- バージョン:
 
 ## 補足
 

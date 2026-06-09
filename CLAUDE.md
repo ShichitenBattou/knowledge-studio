@@ -11,7 +11,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 編集手順
 
 1. ブランチを作成し、GitHub Projects MCPツールでIssueのステータスをIn Progressに変更する
-
    - 下記コマンドでブランチを作成してチェックアウトする（<ISSUE_NUMBER>を置換）
 
    ```bash
@@ -21,6 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - `.github/project.env` からプロジェクト設定値を読み込む（`PROJECT_NUMBER`, `PROJECT_STATUS_FIELD_ID`, `PROJECT_STATUS_IN_PROGRESS_OPTION_ID`）
    - `projects_list`（list_project_items）で対象プロジェクトのアイテムIDを取得する
    - `projects_write`（update_project_item）でStatusフィールドをIn Progressに更新する
+
 2. ADRを`docs/adr`配下に作成し認識合わせを行う。　※[ADRに関してのルール](#adrに関してのルール)を参照
 3. ADRのStatusをProposedにしてコミット
 4. 監理者にADRのチェック・フィードバックを依頼し、待機
@@ -38,7 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### ADRに関してのルール
 
-- ファイル名は「<年月日>_<作業概要(英語で)>.md」とする
+- ファイル名は「<年月日>\_<作業概要(英語で)>.md」とする
 - 下記の内容は必ず記載すること
   - Context: なぜこの決定が必要か（背景・問題・現状）
   - Decision: 何を採用するか / どう実装するか
@@ -46,7 +46,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Alternatives Considered: 複数案を検討した場合は必須、1案しかない場合は省略可
   - Implementation Notes: 実装者向けの補足（省略可だが推奨）
 - フォーマット自体は自由、ただし最新のADRをフォーマットの参考にすること
-- 概要をまとめる為に「<年月日>_<作業概要(英語で)>.index.json」も作成すること
+- 概要をまとめる為に「<年月日>\_<作業概要(英語で)>.index.json」も作成すること
   - jsonにはadrFile, title, status, summary, relatedFilesを含める事
 
 ### その他のルール
@@ -88,13 +88,13 @@ Node.jsのバージョンはVoltaで24.16.0に固定されている（`package.j
 
 ### スタック
 
-| レイヤー | 技術 |
-|---|---|
-| フレームワーク | Nuxt 4 |
-| UI | Nuxt UI v4（Tailwind CSS v4） |
-| データベース | PGlite（WASM経由のブラウザ内PostgreSQL） |
-| ML | HuggingFace Transformers.js |
-| カラーテーマ | デフォルトはダーク、primary=fuchsia、secondary=indigo、accent=cyan |
+| レイヤー       | 技術                                                               |
+| -------------- | ------------------------------------------------------------------ |
+| フレームワーク | Nuxt 4                                                             |
+| UI             | Nuxt UI v4（Tailwind CSS v4）                                      |
+| データベース   | PGlite（WASM経由のブラウザ内PostgreSQL）                           |
+| ML             | HuggingFace Transformers.js                                        |
+| カラーテーマ   | デフォルトはダーク、primary=fuchsia、secondary=indigo、accent=cyan |
 
 ### ファイル構成
 
