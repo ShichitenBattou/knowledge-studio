@@ -49,9 +49,14 @@ export function useKnowledge() {
             for (const name of tagNames) {
                 const trimmed = name.trim()
                 if (!trimmed) continue
+                const newTagId = crypto.randomUUID()
+                await tx.query(
+                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING',
+                    [newTagId, trimmed]
+                )
                 const tagResult = await tx.query<{ id: string }>(
-                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
-                    [crypto.randomUUID(), trimmed]
+                    'SELECT id FROM tags WHERE name = $1',
+                    [trimmed]
                 )
                 const tagId = tagResult.rows[0]!.id
                 await tx.query(
@@ -73,9 +78,14 @@ export function useKnowledge() {
             for (const name of tagNames) {
                 const trimmed = name.trim()
                 if (!trimmed) continue
+                const newTagId = crypto.randomUUID()
+                await tx.query(
+                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING',
+                    [newTagId, trimmed]
+                )
                 const tagResult = await tx.query<{ id: string }>(
-                    'INSERT INTO tags (id, name) VALUES ($1, $2) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
-                    [crypto.randomUUID(), trimmed]
+                    'SELECT id FROM tags WHERE name = $1',
+                    [trimmed]
                 )
                 const tagId = tagResult.rows[0]!.id
                 await tx.query(

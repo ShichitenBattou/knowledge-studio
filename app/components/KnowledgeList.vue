@@ -66,6 +66,7 @@ const editingTagId = ref<string | null>(null)
 const editingTagNameInput = ref('')
 // tabindex はHTML属性として UButton に fallthrough するが ButtonProps の型定義に含まれないため
 const modalCloseProps = { tabindex: -1 } as Record<string, unknown>
+const toast = useToast()
 
 function toggleFilterTag(name: string) {
     const idx = filterTags.value.indexOf(name)
@@ -96,8 +97,14 @@ async function handleTagRename() {
         }
         editingTagId.value = null
         editingTagNameInput.value = ''
-    } catch {
-        // 失敗時は編集状態を維持して再入力できるようにする
+    } catch (e) {
+        console.error(e)
+        const isDuplicate = e instanceof Error && /unique|duplicate/i.test(e.message)
+        toast.add({
+            title: 'タグ名の変更に失敗しました',
+            description: isDuplicate ? '同名のタグが既に存在します' : 'エラーが発生しました',
+            color: 'error',
+        })
     }
 }
 
