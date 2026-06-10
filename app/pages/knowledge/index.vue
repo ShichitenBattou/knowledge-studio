@@ -18,14 +18,16 @@ const searchTopK = ref(5)
 const searchTagNames = ref<string[]>([])
 const searchResults = ref<SearchResult[]>([])
 const isSearching = ref(false)
+const isSearchError = ref(false)
 const hasSearched = ref(false)
 
 const tagOptions = computed(() => allTags.map((t) => ({ label: t.name, value: t.name })))
 
 async function handleSearch() {
   const trimmed = searchQuery.value.trim()
-  if (!trimmed) return
+  if (!trimmed || isSearching.value) return
   isSearching.value = true
+  isSearchError.value = false
   try {
     searchResults.value = await searchNotes(
       trimmed,
@@ -33,6 +35,9 @@ async function handleSearch() {
       searchTagNames.value.length > 0 ? searchTagNames.value : undefined,
     )
     hasSearched.value = true
+  } catch (e) {
+    console.error(e)
+    isSearchError.value = true
   } finally {
     isSearching.value = false
   }
@@ -40,8 +45,10 @@ async function handleSearch() {
 
 function clearSearch() {
   searchQuery.value = ''
+  searchTopK.value = 5
   searchTagNames.value = []
   searchResults.value = []
+  isSearchError.value = false
   hasSearched.value = false
 }
 </script>
@@ -95,7 +102,15 @@ function clearSearch() {
         </div>
       </div>
 
-      <div v-if="hasSearched">
+      <UAlert
+        v-if="isSearchError"
+        color="error"
+        variant="soft"
+        class="mb-3"
+        title="検索中にエラーが発生しました。もう一度お試しください。"
+      />
+
+      <div v-if="hasSearched && !isSearchError">
         <p v-if="searchResults.length === 0" class="text-sm text-gray-400">
           該当するナレッジが見つかりませんでした。
         </p>
