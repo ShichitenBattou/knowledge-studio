@@ -1,7 +1,7 @@
 {
   "adrFile": "20260610_vector_search.md",
   "title": "ベクトル検索",
-  "status": "Proposed",
+  "status": "Accepted",
   "summary": "pgvectorの<=>演算子（コサイン距離）とTransformers.jsを組み合わせたベクトル検索を実装する。useKnowledgeにsearchNotes関数を追加し、top-k指定・タグフィルタとの組み合わせ検索をサポートする。UIは既存のナレッジ一覧ページに検索セクションを追加。",
   "relatedFiles": [
     "app/composables/useKnowledge.ts",
