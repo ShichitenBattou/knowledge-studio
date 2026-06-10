@@ -141,4 +141,72 @@ describe('useKnowledge', () => {
       expect(mockDbQuery).not.toHaveBeenCalled()
     })
   })
+
+  describe('searchNotes', () => {
+    beforeEach(() => {
+      mockDbQuery.mockResolvedValue({
+        rows: [
+          { id: 'n1', note: 'テストノート', created_at: '2026-01-01', tags: ['タグA'], score: 0.9 },
+          { id: 'n2', note: '別ノート', created_at: '2026-01-02', tags: [], score: 0.7 },
+        ],
+      })
+    })
+
+    it('クエリの埋め込みを生成してDBを検索する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('テスト検索')
+      expect(mockGenerateEmbedding).toHaveBeenCalledWith('テスト検索')
+      expect(mockDbQuery).toHaveBeenCalledOnce()
+      const [sql, params] = mockDbQuery.mock.calls[0] as [string, unknown[]]
+      expect(sql).toContain('ranked_notes')
+      expect(sql).toContain('embedding <=> $1')
+      expect(params[1]).toBe(5)
+    })
+
+    it('topKのデフォルト値は5', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ')
+      const [, params] = mockDbQuery.mock.calls[0] as [string, unknown[]]
+      expect(params[1]).toBe(5)
+    })
+
+    it('topKを指定できる', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 10)
+      const [, params] = mockDbQuery.mock.calls[0] as [string, unknown[]]
+      expect(params[1]).toBe(10)
+    })
+
+    it('タグフィルタなしの場合はパラメータ2つのSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ')
+      const [, params] = mockDbQuery.mock.calls[0] as [string, unknown[]]
+      expect(params).toHaveLength(2)
+    })
+
+    it('タグフィルタありの場合はパラメータ3つのSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['タグA'])
+      const [sql, params] = mockDbQuery.mock.calls[0] as [string, unknown[]]
+      expect(sql).toContain('ANY($3)')
+      expect(params[2]).toEqual(['タグA'])
+    })
+
+    it('スコアが負の場合は0にクランプする', async () => {
+      mockDbQuery.mockResolvedValue({
+        rows: [{ id: 'n1', note: 'ノート', created_at: '2026-01-01', tags: [], score: -0.1 }],
+      })
+      const { searchNotes } = useKnowledge()
+      const results = await searchNotes('クエリ')
+      expect(results[0]!.score).toBe(0)
+    })
+
+    it('検索結果をそのまま返す', async () => {
+      const { searchNotes } = useKnowledge()
+      const results = await searchNotes('テスト検索')
+      expect(results).toHaveLength(2)
+      expect(results[0]!.id).toBe('n1')
+      expect(results[0]!.score).toBe(0.9)
+    })
+  })
 })

@@ -13,6 +13,10 @@ export interface Note {
   tags: string[]
 }
 
+export interface SearchResult extends Note {
+  score: number
+}
+
 export function useKnowledge() {
   const allNotes = reactive<Note[]>([])
   const allTags = reactive<Tag[]>([])
@@ -110,6 +114,59 @@ export function useKnowledge() {
     await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
   }
 
+  async function searchNotes(
+    query: string,
+    topK: number = 5,
+    tagNames?: string[],
+  ): Promise<SearchResult[]> {
+    const embedding = await generateEmbedding(query)
+    const vectorParam = toPgVector(embedding)
+    const hasTagFilter = tagNames && tagNames.length > 0
+
+    const sql = hasTagFilter
+      ? `
+        WITH ranked_notes AS (
+          SELECT n.id, n.note, n.created_at, n.embedding <=> $1 AS distance
+          FROM notes n
+          WHERE EXISTS (
+            SELECT 1 FROM note_tags nt2
+            JOIN tags t2 ON nt2.tag_id = t2.id
+            WHERE nt2.note_id = n.id AND t2.name = ANY($3)
+          )
+          ORDER BY distance
+          LIMIT $2
+        )
+        SELECT r.id, r.note, r.created_at,
+          COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
+          1 - r.distance AS score
+        FROM ranked_notes r
+        LEFT JOIN note_tags nt ON r.id = nt.note_id
+        LEFT JOIN tags t ON nt.tag_id = t.id
+        GROUP BY r.id, r.note, r.created_at, r.distance
+        ORDER BY r.distance
+      `
+      : `
+        WITH ranked_notes AS (
+          SELECT n.id, n.note, n.created_at, n.embedding <=> $1 AS distance
+          FROM notes n
+          ORDER BY distance
+          LIMIT $2
+        )
+        SELECT r.id, r.note, r.created_at,
+          COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
+          1 - r.distance AS score
+        FROM ranked_notes r
+        LEFT JOIN note_tags nt ON r.id = nt.note_id
+        LEFT JOIN tags t ON nt.tag_id = t.id
+        GROUP BY r.id, r.note, r.created_at, r.distance
+        ORDER BY r.distance
+      `
+
+    const params = hasTagFilter ? [vectorParam, topK, tagNames] : [vectorParam, topK]
+    const result = await db.query<SearchResult>(sql, params)
+    return result.rows.map((row) => ({ ...row, score: Math.max(0, row.score) }))
+  }
+
   return {
     allNotes,
     allTags,
@@ -119,5 +176,6 @@ export function useKnowledge() {
     deleteNote,
     deleteTag,
     renameTag,
+    searchNotes,
   }
 }
