@@ -23,7 +23,7 @@ Issue #4（ナレッジ登録）により `notes` テーブルには `embedding 
 CTE で「距離計算 + top-k 絞り込み」と「タグ集約」を分離する。
 
 ```sql
-WITH ranked AS (
+WITH ranked_notes AS (
   SELECT
     n.id,
     n.note,
@@ -45,7 +45,7 @@ SELECT
   r.created_at,
   COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
   1 - r.distance AS score
-FROM ranked r
+FROM ranked_notes r
 LEFT JOIN note_tags nt ON r.id = nt.note_id
 LEFT JOIN tags t ON nt.tag_id = t.id
 GROUP BY r.id, r.note, r.created_at, r.distance
@@ -55,7 +55,7 @@ ORDER BY r.distance
 - `$1`: クエリの埋め込みベクトル（pgvector 形式文字列）
 - `$2`: top-k（デフォルト 5）
 - `$3`: タグ名配列（`null` で全件対象）
-- `ranked` CTE: タグフィルタと距離計算を行い top-k に絞り込む
+- `ranked_notes` CTE: タグフィルタと距離計算を行い top-k に絞り込む
 - 外側クエリ: 絞り込み済み行にタグを集約し、`1 - distance` でスコアを算出する
 
 ### インターフェース
