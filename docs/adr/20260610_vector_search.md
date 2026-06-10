@@ -20,31 +20,43 @@ Issue #4（ナレッジ登録）により `notes` テーブルには `embedding 
 
 ### SQL（コサイン類似度検索 + タグフィルタ）
 
+CTE で「距離計算 + top-k 絞り込み」と「タグ集約」を分離する。
+
 ```sql
+WITH ranked AS (
+  SELECT
+    n.id,
+    n.note,
+    n.created_at,
+    n.embedding <=> $1 AS distance
+  FROM notes n
+  WHERE
+    ($3::text[] IS NULL OR EXISTS (
+      SELECT 1 FROM note_tags nt2
+      JOIN tags t2 ON nt2.tag_id = t2.id
+      WHERE nt2.note_id = n.id AND t2.name = ANY($3)
+    ))
+  ORDER BY distance
+  LIMIT $2
+)
 SELECT
-  n.id,
-  n.note,
-  n.created_at,
+  r.id,
+  r.note,
+  r.created_at,
   COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
-  1 - (n.embedding <=> $1) AS score
-FROM notes n
-LEFT JOIN note_tags nt ON n.id = nt.note_id
+  1 - r.distance AS score
+FROM ranked r
+LEFT JOIN note_tags nt ON r.id = nt.note_id
 LEFT JOIN tags t ON nt.tag_id = t.id
-WHERE
-  ($3::text[] IS NULL OR EXISTS (
-    SELECT 1 FROM note_tags nt2
-    JOIN tags t2 ON nt2.tag_id = t2.id
-    WHERE nt2.note_id = n.id AND t2.name = ANY($3)
-  ))
-GROUP BY n.id, n.note, n.created_at, n.embedding
-ORDER BY n.embedding <=> $1
-LIMIT $2
+GROUP BY r.id, r.note, r.created_at, r.distance
+ORDER BY r.distance
 ```
 
 - `$1`: クエリの埋め込みベクトル（pgvector 形式文字列）
 - `$2`: top-k（デフォルト 5）
 - `$3`: タグ名配列（`null` で全件対象）
-- `<=>` はコサイン距離。スコアは `1 - distance` で類似度として表示する（0〜1、高いほど類似）
+- `ranked` CTE: タグフィルタと距離計算を行い top-k に絞り込む
+- 外側クエリ: 絞り込み済み行にタグを集約し、`1 - distance` でスコアを算出する
 
 ### インターフェース
 
