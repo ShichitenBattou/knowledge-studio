@@ -32,6 +32,11 @@ async function handleCreate() {
   }
 }
 
+function addSuggestedTag(name: string) {
+  newNoteTags.value.push(name)
+  newTagInput.value = ''
+}
+
 function addNewTag() {
   const name = newTagInput.value.trim()
   if (name && !newNoteTags.value.includes(name)) {
@@ -95,18 +100,9 @@ function addNewTag() {
             class="cursor-pointer"
             tabindex="0"
             role="button"
-            @click="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
-            @keydown.enter.prevent="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
-            @keydown.space.prevent="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
+            @click="addSuggestedTag(tag.name)"
+            @keydown.enter.prevent="addSuggestedTag(tag.name)"
+            @keydown.space.prevent="addSuggestedTag(tag.name)"
           >
             + {{ tag.name }}
           </UBadge>

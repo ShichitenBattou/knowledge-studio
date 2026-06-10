@@ -50,6 +50,11 @@ async function handleUpdate() {
   }
 }
 
+function addSuggestedEditTag(name: string) {
+  editingNote.tags.push(name)
+  editTagInput.value = ''
+}
+
 function addEditTag() {
   const name = editTagInput.value.trim()
   if (name && !editingNote.tags.includes(name)) {
@@ -250,18 +255,9 @@ function formatDate(dateStr: string): string {
                 class="cursor-pointer"
                 tabindex="0"
                 role="button"
-                @click="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
-                @keydown.enter.prevent="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
-                @keydown.space.prevent="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
+                @click="addSuggestedEditTag(tag.name)"
+                @keydown.enter.prevent="addSuggestedEditTag(tag.name)"
+                @keydown.space.prevent="addSuggestedEditTag(tag.name)"
               >
                 + {{ tag.name }}
               </UBadge>
