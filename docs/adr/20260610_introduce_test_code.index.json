@@ -2,6 +2,15 @@
   "adrFile": "20260610_introduce_test_code.md",
   "title": "テストコードの導入",
   "status": "Proposed",
-  "summary": "Vitest + @nuxt/test-utils を導入してテスト基盤を整備する。純粋関数（toPgVector等）はユニットテストで直接検証し、WASM/ブラウザ依存コードはモック対象とする。npm run test スクリプトを追加する。",
-  "relatedFiles": ["package.json", "vitest.config.ts", "app/utility.ts", "app/utility.test.ts"]
+  "summary": "Vitest + @nuxt/test-utils を導入してテスト基盤を整備する。純粋関数（toPgVector等）とuseKnowledge（dbモック使用）はユニットテストで検証。useEmbeddingはテストファイルのみ作成し空ケース＋コメントでプロジェクト規約を示す。",
+  "relatedFiles": [
+    "package.json",
+    "vitest.config.ts",
+    "app/utility.ts",
+    "app/utility.test.ts",
+    "app/composables/useKnowledge.ts",
+    "app/composables/useKnowledge.test.ts",
+    "app/composables/useEmbedding.ts",
+    "app/composables/useEmbedding.test.ts"
+  ]
 }
