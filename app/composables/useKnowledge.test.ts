@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
 import { useKnowledge } from './useKnowledge'
@@ -20,31 +20,34 @@ vi.mock('../db', () => ({
   initializeKnowledgeDB: vi.fn(),
 }))
 
-// useEmbedding は Nuxt auto-import のため globalThis で提供する
+// useEmbedding は Nuxt auto-import のため vi.stubGlobal で提供する
 const mockGenerateEmbedding = vi.fn()
-Object.assign(globalThis, {
-  useEmbedding: () => ({
-    generateEmbedding: mockGenerateEmbedding,
-    isLoading: ref(false),
-  }),
-})
 
 describe('useKnowledge', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // vi.stubGlobal でテスト間の globalThis 汚染を防ぐ
+    vi.stubGlobal('useEmbedding', () => ({
+      generateEmbedding: mockGenerateEmbedding,
+      isLoading: ref(false),
+    }))
     mockGenerateEmbedding.mockResolvedValue(Array(384).fill(0.1))
     mockTransaction.mockImplementation(
       async (callback: (tx: { query: typeof mockTxQuery }) => Promise<void>) => {
         await callback({ query: mockTxQuery })
       },
     )
-    // SELECT id FROM tags は tag ID を返す、その他の INSERT/UPDATE/DELETE は空を返す
+    // SELECT id FROM tags WHERE name は tag ID を返す、その他は空を返す
     mockTxQuery.mockImplementation(async (sql: string) => {
-      if (sql.startsWith('SELECT id FROM tags')) {
+      if (sql.includes('SELECT id FROM tags WHERE name')) {
         return { rows: [{ id: 'mock-tag-id' }] }
       }
       return { rows: [] }
     })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 
   describe('handleCreate', () => {
@@ -53,6 +56,11 @@ describe('useKnowledge', () => {
       await handleCreate('テストノート', [])
       expect(mockGenerateEmbedding).toHaveBeenCalledWith('テストノート')
       expect(mockTransaction).toHaveBeenCalledOnce()
+      const notesInsert = mockTxQuery.mock.calls.find(([sql]: [string]) =>
+        sql.startsWith('INSERT INTO notes'),
+      )
+      expect(notesInsert).toBeDefined()
+      expect(notesInsert![1][1]).toBe('テストノート')
     })
 
     it('タグ名の前後スペースを除去して登録する', async () => {
