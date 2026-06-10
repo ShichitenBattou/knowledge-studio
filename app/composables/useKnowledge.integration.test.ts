@@ -1,5 +1,6 @@
 import { PGlite } from '@electric-sql/pglite'
 import { vector } from '@electric-sql/pglite/vector'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { toPgVector } from '~/utility'
 

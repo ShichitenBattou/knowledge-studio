@@ -1,5 +1,6 @@
 // @vitest-environment happy-dom
 import { shallowMount } from '@vue/test-utils'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive, ref } from 'vue'
 
 import KnowledgePage from './index.vue'
