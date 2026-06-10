@@ -1,7 +1,7 @@
 # ADR: テストコードの導入
 
 - **Date**: 2026-06-10
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #23 テストコードの導入
 
 ---

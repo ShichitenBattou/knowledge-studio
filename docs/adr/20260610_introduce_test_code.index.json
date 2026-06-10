@@ -1,7 +1,7 @@
 {
   "adrFile": "20260610_introduce_test_code.md",
   "title": "テストコードの導入",
-  "status": "Proposed",
+  "status": "Accepted",
   "summary": "Vitest + @nuxt/test-utils を導入してテスト基盤を整備する。純粋関数（toPgVector等）とuseKnowledge（dbモック使用）はユニットテストで検証。useEmbeddingはテストファイルのみ作成し空ケース＋コメントでプロジェクト規約を示す。",
   "relatedFiles": [
     "package.json",
