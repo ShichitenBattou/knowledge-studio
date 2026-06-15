@@ -28,7 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 6. 4~5を監理者の承諾が得られるまで継続
 7. 監理者の承諾が得られればADRのStatusをAcceptedに変更しコミット
 8. ADRの内容に基づいて実装を行う
-9. 実装後、テストとフォーマッター/リンターを使用しコード品質を保つ（現在は未整備のため対応不要）
+9. 実装後、テストとフォーマッター/リンターを使用しコード品質を保つ
 10. `code-reviewer` サブエージェントで実装内容をセルフレビューし、Criticalおよび Major 指摘があれば修正する
 11. `pr-creator` サブエージェントでPRを作成する（Issue番号を引数で渡す）
     - ドラフトPRの場合はその旨を明示して指示する
@@ -77,7 +77,7 @@ Node.jsのバージョンはVoltaで24.16.0に固定されている（`package.j
 
 - **SSR無効**: `nuxt.config.ts`で`ssr: false`。すべてのデータアクセスはクライアントサイドのみ。
 - **ブラウザ内PostgreSQL（PGlite）**: `app/db.ts`がモジュールロード時にPGliteのシングルトンインスタンスを初期化する。WASMバイナリとデータファイルは`/public/pglite/`から`WebAssembly.compileStreaming`で読み込む。データの永続化にはIndexedDB（`idb://knowledge-studio-pglite`）を使用。
-- **ベクトル検索**: PGliteは`pgvector`拡張を有効にして動作。埋め込みは384次元（`Xenova/all-MiniLM-L6-V2`使用）。
+- **ベクトル検索**: PGliteは`pgvector`拡張を有効にして動作。埋め込みは384次元（`Xenova/paraphrase-multilingual-MiniLM-L12-v2`使用）。
 - **ブラウザ内ML推論**: `@huggingface/transformers`が埋め込みモデルをブラウザ内で完結させる。バックエンドへのAPIコールは発生しない。
 - **リアクティブDBクエリ**: PGliteの`live`拡張（`db.live.query(...)`）でクエリ結果をリアクティブにし、データ変更時にVueコンポーネントが自動再描画される。
 
