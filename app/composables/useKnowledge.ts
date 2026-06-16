@@ -126,7 +126,7 @@ export function useKnowledge() {
   ): Promise<SearchResult[]> {
     const trimmedQuery = query.trim()
     if (!trimmedQuery || isSearching.value) return []
-    const safeTopK = Math.min(20, Math.max(1, Math.floor(topK)))
+    const safeTopK = Number.isFinite(topK) ? Math.min(20, Math.max(1, Math.floor(topK))) : 5
     const safeFilterTags = filterTagNames.map((t) => t.trim()).filter(Boolean)
     isSearching.value = true
     try {

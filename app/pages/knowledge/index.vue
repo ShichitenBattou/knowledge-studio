@@ -18,6 +18,7 @@ const searchQuery = ref('')
 const searchTopK = ref(5)
 const searchFilterTags = ref<string[]>([])
 const searchResults = ref<SearchResult[]>([])
+const hasSearched = ref(false)
 const isDev = import.meta.dev
 
 async function handleSearch() {
@@ -28,6 +29,7 @@ async function handleSearch() {
       searchTopK.value,
       searchFilterTags.value,
     )
+    hasSearched.value = true
   } catch (e) {
     console.error('ベクトル検索に失敗しました', e)
   }
@@ -38,6 +40,7 @@ function clearSearch() {
   searchTopK.value = 5
   searchFilterTags.value = []
   searchResults.value = []
+  hasSearched.value = false
 }
 </script>
 
@@ -124,7 +127,7 @@ function clearSearch() {
               </div>
             </div>
           </div>
-          <p v-else-if="searchQuery && !isSearching" class="text-sm text-muted">
+          <p v-else-if="hasSearched && !isSearching" class="text-sm text-muted">
             検索結果がありません
           </p>
         </div>

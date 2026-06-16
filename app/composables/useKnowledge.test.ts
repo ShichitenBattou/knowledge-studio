@@ -200,6 +200,13 @@ describe('useKnowledge', () => {
       expect(params[1]).toBe(20)
     })
 
+    it('topKがNaNの場合はデフォルト5にフォールバックする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', NaN)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(5)
+    })
+
     it('filterTagNamesの空文字は除去して渡す', async () => {
       const { searchNotes } = useKnowledge()
       await searchNotes('クエリ', 5, ['タグA', '', '  '])
