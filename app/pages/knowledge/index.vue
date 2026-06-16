@@ -18,6 +18,7 @@ const searchQuery = ref('')
 const searchTopK = ref(5)
 const searchFilterTags = ref<string[]>([])
 const searchResults = ref<SearchResult[]>([])
+const isDev = import.meta.dev
 
 async function handleSearch() {
   const topK = Number.isFinite(searchTopK.value) && searchTopK.value >= 1 ? searchTopK.value : 5
@@ -47,7 +48,7 @@ function clearSearch() {
       />
     </section>
 
-    <template v-if="import.meta.dev">
+    <template v-if="isDev">
       <USeparator class="mb-8" />
 
       <section class="mb-8">
