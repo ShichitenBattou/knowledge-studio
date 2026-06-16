@@ -58,6 +58,13 @@ function addEditTag() {
   editTagInput.value = ''
 }
 
+function selectEditSuggestedTag(tagName: string) {
+  if (!editingNote.tags.includes(tagName)) {
+    editingNote.tags.push(tagName)
+  }
+  editTagInput.value = ''
+}
+
 // タグ管理モーダル
 const isTagManagerOpen = ref(false)
 const editingTagId = ref<string | null>(null)
@@ -250,18 +257,9 @@ function formatDate(dateStr: string): string {
                 class="cursor-pointer"
                 tabindex="0"
                 role="button"
-                @click="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
-                @keydown.enter.prevent="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
-                @keydown.space.prevent="
-                  editingNote.tags.push(tag.name)
-                  editTagInput = ''
-                "
+                @click="selectEditSuggestedTag(tag.name)"
+                @keydown.enter.prevent="selectEditSuggestedTag(tag.name)"
+                @keydown.space.prevent="selectEditSuggestedTag(tag.name)"
               >
                 + {{ tag.name }}
               </UBadge>

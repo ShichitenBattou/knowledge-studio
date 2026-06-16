@@ -39,6 +39,13 @@ function addNewTag() {
   }
   newTagInput.value = ''
 }
+
+function selectSuggestedTag(tagName: string) {
+  if (!newNoteTags.value.includes(tagName)) {
+    newNoteTags.value.push(tagName)
+  }
+  newTagInput.value = ''
+}
 </script>
 
 <template>
@@ -95,18 +102,9 @@ function addNewTag() {
             class="cursor-pointer"
             tabindex="0"
             role="button"
-            @click="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
-            @keydown.enter.prevent="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
-            @keydown.space.prevent="
-              newNoteTags.push(tag.name)
-              newTagInput = ''
-            "
+            @click="selectSuggestedTag(tag.name)"
+            @keydown.enter.prevent="selectSuggestedTag(tag.name)"
+            @keydown.space.prevent="selectSuggestedTag(tag.name)"
           >
             + {{ tag.name }}
           </UBadge>

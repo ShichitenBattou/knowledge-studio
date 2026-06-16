@@ -141,4 +141,121 @@ describe('useKnowledge', () => {
       expect(mockDbQuery).not.toHaveBeenCalled()
     })
   })
+
+  describe('searchNotes', () => {
+    beforeEach(() => {
+      mockDbQuery.mockResolvedValue({ rows: [] })
+    })
+
+    it('クエリから埋め込みを生成してDBに渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('テスト検索')
+      expect(mockGenerateEmbedding).toHaveBeenCalledWith('テスト検索')
+      expect(mockDbQuery).toHaveBeenCalledOnce()
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('<=> $1::vector')
+      expect(params[0]).toMatch(/^\[/)
+    })
+
+    it('topKをデフォルト5で検索する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ')
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(5)
+    })
+
+    it('topKを任意値で指定できる', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 3)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(3)
+    })
+
+    it('filterTagNamesを渡した場合はHAVING句付きSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['タグA', 'タグB'])
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('HAVING bool_or')
+      expect(params[2]).toEqual(['タグA', 'タグB'])
+    })
+
+    it('空白のみのクエリは空配列を返しEmbeddingを呼ばない', async () => {
+      const { searchNotes } = useKnowledge()
+      const result = await searchNotes('   ')
+      expect(result).toEqual([])
+      expect(mockGenerateEmbedding).not.toHaveBeenCalled()
+    })
+
+    it('topKが小数の場合は切り捨てて渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 3.7)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(3)
+    })
+
+    it('topKが20を超える場合は20にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 100)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(20)
+    })
+
+    it('topKがNaNの場合はデフォルト5にフォールバックする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', NaN)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(5)
+    })
+
+    it('topKが0の場合は1にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 0)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(1)
+    })
+
+    it('topKが負数の場合は1にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', -5)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(1)
+    })
+
+    it('filterTagNamesの空文字は除去して渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['タグA', '', '  '])
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('HAVING bool_or')
+      expect(params[2]).toEqual(['タグA'])
+    })
+
+    it('filterTagNamesの前後スペースをトリムして渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['  タグA  '])
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[2]).toEqual(['タグA'])
+    })
+
+    it('filterTagNamesが空白のみの場合はHAVINGなしSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['', '  '])
+      const [sql] = mockDbQuery.mock.calls[0]
+      expect(sql).not.toContain('HAVING bool_or')
+    })
+
+    it('検索中の再呼び出しは空配列を返す', async () => {
+      const { searchNotes, isSearching } = useKnowledge()
+      isSearching.value = true
+      const result = await searchNotes('クエリ')
+      expect(result).toEqual([])
+      expect(mockGenerateEmbedding).not.toHaveBeenCalled()
+    })
+
+    it('generateEmbeddingが失敗した場合はisSearchingをfalseに戻す', async () => {
+      const { searchNotes, isSearching } = useKnowledge()
+      mockGenerateEmbedding.mockRejectedValueOnce(new Error('embedding失敗'))
+      await expect(searchNotes('クエリ')).rejects.toThrow('embedding失敗')
+      expect(isSearching.value).toBe(false)
+    })
+  })
 })
