@@ -142,12 +142,12 @@ export function useKnowledge() {
             SELECT
               n.id, n.note, n.created_at,
               COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
-              (n.embedding <=> $1::vector) AS distance
+              MIN(n.embedding <=> $1::vector) AS distance
             FROM notes n
             LEFT JOIN note_tags nt ON n.id = nt.note_id
             LEFT JOIN tags t ON nt.tag_id = t.id
             WHERE n.embedding IS NOT NULL
-            GROUP BY n.id, n.note, n.created_at, n.embedding
+            GROUP BY n.id, n.note, n.created_at
           )
           SELECT id, note, created_at, tags, (1 - distance) AS similarity
           FROM ranked_notes
@@ -161,12 +161,12 @@ export function useKnowledge() {
             SELECT
               n.id, n.note, n.created_at,
               COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
-              (n.embedding <=> $1::vector) AS distance
+              MIN(n.embedding <=> $1::vector) AS distance
             FROM notes n
             LEFT JOIN note_tags nt ON n.id = nt.note_id
             LEFT JOIN tags t ON nt.tag_id = t.id
             WHERE n.embedding IS NOT NULL
-            GROUP BY n.id, n.note, n.created_at, n.embedding
+            GROUP BY n.id, n.note, n.created_at
             HAVING bool_or(t.name = ANY($3::text[]))
           )
           SELECT id, note, created_at, tags, (1 - distance) AS similarity
