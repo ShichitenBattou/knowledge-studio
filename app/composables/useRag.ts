@@ -50,6 +50,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     if (_isModelLoading.value) return
     _isModelLoading.value = true
     _isModelLoaded.value = false
+    _engine = null
     _modelLoadProgress.value = ''
     _modelLoadError.value = ''
     try {
@@ -69,7 +70,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
   }
 
   async function generate(query: string, topK: number = 5): Promise<string> {
-    if (_isGenerating.value || !_engine) return ''
+    if (_isGenerating.value || !_engine || !_isModelLoaded.value) return ''
 
     _isGenerating.value = true
     _streamingAnswer.value = ''

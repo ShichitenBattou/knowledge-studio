@@ -20,6 +20,7 @@ const modelOptions = RAG_MODELS.map((m) => ({ label: m.label, value: m.id }))
 const query = ref('')
 const topK = ref(5)
 
+const generateError = ref('')
 const selectedSourceNote = ref<RagSource | null>(null)
 const isSourceModalOpen = ref(false)
 
@@ -34,7 +35,13 @@ async function handleLoadModel() {
 
 async function handleGenerate() {
   if (!query.value.trim() || isGenerating.value || !isModelLoaded.value) return
-  await generate(query.value.trim(), topK.value)
+  generateError.value = ''
+  try {
+    await generate(query.value.trim(), topK.value)
+  } catch (e) {
+    generateError.value = e instanceof Error ? e.message : '生成中にエラーが発生しました'
+    console.error('RAG生成エラー', e)
+  }
 }
 </script>
 
@@ -108,6 +115,9 @@ async function handleGenerate() {
       </div>
     </section>
 
+    <!-- 生成エラー -->
+    <p v-if="generateError" class="text-sm text-error mt-2">{{ generateError }}</p>
+
     <!-- 回答 -->
     <template v-if="streamingAnswer || isGenerating">
       <USeparator class="mb-8" />
@@ -161,7 +171,7 @@ async function handleGenerate() {
 
     <!-- 出典モーダル -->
     <UModal v-model:open="isSourceModalOpen">
-      <template #content>
+      <template #body>
         <div class="p-6">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-base font-semibold">ナレッジ全文</h3>
