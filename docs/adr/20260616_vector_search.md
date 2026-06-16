@@ -1,7 +1,7 @@
 # ADR: ベクトル検索
 
 - **Date**: 2026-06-16
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #6 ベクトル検索
 
 ---
