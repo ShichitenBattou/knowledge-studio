@@ -141,4 +141,50 @@ describe('useKnowledge', () => {
       expect(mockDbQuery).not.toHaveBeenCalled()
     })
   })
+
+  describe('searchNotes', () => {
+    beforeEach(() => {
+      mockDbQuery.mockResolvedValue({ rows: [] })
+    })
+
+    it('クエリから埋め込みを生成してDBに渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('テスト検索')
+      expect(mockGenerateEmbedding).toHaveBeenCalledWith('テスト検索')
+      expect(mockDbQuery).toHaveBeenCalledOnce()
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('<=> $1::vector')
+      expect(params[0]).toMatch(/^\[/)
+    })
+
+    it('topKをデフォルト5で検索する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ')
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(5)
+    })
+
+    it('topKを任意値で指定できる', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 3)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(3)
+    })
+
+    it('filterTagNamesを渡した場合はHAVING句付きSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['タグA', 'タグB'])
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('HAVING bool_or')
+      expect(params[2]).toEqual(['タグA', 'タグB'])
+    })
+
+    it('検索中の再呼び出しは空配列を返す', async () => {
+      const { searchNotes, isSearching } = useKnowledge()
+      isSearching.value = true
+      const result = await searchNotes('クエリ')
+      expect(result).toEqual([])
+      expect(mockGenerateEmbedding).not.toHaveBeenCalled()
+    })
+  })
 })

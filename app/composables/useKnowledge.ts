@@ -13,9 +13,18 @@ export interface Note {
   tags: string[]
 }
 
+export interface SearchResult {
+  id: string
+  note: string
+  created_at: string
+  tags: string[]
+  similarity: number
+}
+
 export function useKnowledge() {
   const allNotes = reactive<Note[]>([])
   const allTags = reactive<Tag[]>([])
+  const isSearching = ref(false)
   const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
 
   onMounted(async () => {
@@ -110,14 +119,76 @@ export function useKnowledge() {
     await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
   }
 
+  async function searchNotes(
+    query: string,
+    topK: number = 5,
+    filterTagNames: string[] = [],
+  ): Promise<SearchResult[]> {
+    if (isSearching.value) return []
+    isSearching.value = true
+    try {
+      const queryEmbedding = await generateEmbedding(query)
+      const vectorStr = toPgVector(queryEmbedding)
+
+      let sql: string
+      let params: unknown[]
+
+      if (filterTagNames.length === 0) {
+        sql = `
+          WITH ranked_notes AS (
+            SELECT
+              n.id, n.note, n.created_at,
+              COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
+              (n.embedding <=> $1::vector) AS distance
+            FROM notes n
+            LEFT JOIN note_tags nt ON n.id = nt.note_id
+            LEFT JOIN tags t ON nt.tag_id = t.id
+            GROUP BY n.id, n.note, n.created_at, n.embedding
+          )
+          SELECT id, note, created_at, tags, (1 - distance) AS similarity
+          FROM ranked_notes
+          ORDER BY distance ASC
+          LIMIT $2
+        `
+        params = [vectorStr, topK]
+      } else {
+        sql = `
+          WITH ranked_notes AS (
+            SELECT
+              n.id, n.note, n.created_at,
+              COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags,
+              (n.embedding <=> $1::vector) AS distance
+            FROM notes n
+            LEFT JOIN note_tags nt ON n.id = nt.note_id
+            LEFT JOIN tags t ON nt.tag_id = t.id
+            GROUP BY n.id, n.note, n.created_at, n.embedding
+            HAVING bool_or(t.name = ANY($3::text[]))
+          )
+          SELECT id, note, created_at, tags, (1 - distance) AS similarity
+          FROM ranked_notes
+          ORDER BY distance ASC
+          LIMIT $2
+        `
+        params = [vectorStr, topK, filterTagNames]
+      }
+
+      const result = await db.query<SearchResult>(sql, params)
+      return result.rows
+    } finally {
+      isSearching.value = false
+    }
+  }
+
   return {
     allNotes,
     allTags,
     isEmbeddingLoading,
+    isSearching,
     handleCreate,
     handleUpdate,
     deleteNote,
     deleteTag,
     renameTag,
+    searchNotes,
   }
 }
