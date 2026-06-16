@@ -179,6 +179,35 @@ describe('useKnowledge', () => {
       expect(params[2]).toEqual(['タグA', 'タグB'])
     })
 
+    it('空白のみのクエリは空配列を返しEmbeddingを呼ばない', async () => {
+      const { searchNotes } = useKnowledge()
+      const result = await searchNotes('   ')
+      expect(result).toEqual([])
+      expect(mockGenerateEmbedding).not.toHaveBeenCalled()
+    })
+
+    it('topKが小数の場合は切り捨てて渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 3.7)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(3)
+    })
+
+    it('topKが20を超える場合は20にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 100)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(20)
+    })
+
+    it('filterTagNamesの空文字は除去して渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['タグA', '', '  '])
+      const [sql, params] = mockDbQuery.mock.calls[0]
+      expect(sql).toContain('HAVING bool_or')
+      expect(params[2]).toEqual(['タグA'])
+    })
+
     it('検索中の再呼び出しは空配列を返す', async () => {
       const { searchNotes, isSearching } = useKnowledge()
       isSearching.value = true

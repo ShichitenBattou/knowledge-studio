@@ -21,9 +21,13 @@ const searchResults = ref<SearchResult[]>([])
 const isDev = import.meta.dev
 
 async function handleSearch() {
-  const topK = Number.isFinite(searchTopK.value) && searchTopK.value >= 1 ? searchTopK.value : 5
+  if (!searchQuery.value.trim() || isSearching.value) return
   try {
-    searchResults.value = await searchNotes(searchQuery.value, topK, searchFilterTags.value)
+    searchResults.value = await searchNotes(
+      searchQuery.value,
+      searchTopK.value,
+      searchFilterTags.value,
+    )
   } catch (e) {
     console.error('ベクトル検索に失敗しました', e)
   }
@@ -63,7 +67,11 @@ function clearSearch() {
               placeholder="検索クエリを入力..."
               :disabled="isSearching"
             />
-            <UButton :loading="isSearching" :disabled="!searchQuery" @click="handleSearch">
+            <UButton
+              :loading="isSearching"
+              :disabled="!searchQuery.trim() || isSearching"
+              @click="handleSearch"
+            >
               検索
             </UButton>
             <UButton

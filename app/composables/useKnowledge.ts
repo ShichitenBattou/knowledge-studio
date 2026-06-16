@@ -124,10 +124,13 @@ export function useKnowledge() {
     topK: number = 5,
     filterTagNames: string[] = [],
   ): Promise<SearchResult[]> {
-    if (isSearching.value) return []
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery || isSearching.value) return []
+    const safeTopK = Math.min(20, Math.max(1, Math.floor(topK)))
+    const safeFilterTags = filterTagNames.filter((t) => t.trim())
     isSearching.value = true
     try {
-      const queryEmbedding = await generateEmbedding(query)
+      const queryEmbedding = await generateEmbedding(trimmedQuery)
       const vectorStr = toPgVector(queryEmbedding)
 
       let sql: string
@@ -151,7 +154,7 @@ export function useKnowledge() {
           ORDER BY distance ASC
           LIMIT $2
         `
-        params = [vectorStr, topK]
+        params = [vectorStr, safeTopK]
       } else {
         sql = `
           WITH ranked_notes AS (
@@ -171,7 +174,7 @@ export function useKnowledge() {
           ORDER BY distance ASC
           LIMIT $2
         `
-        params = [vectorStr, topK, filterTagNames]
+        params = [vectorStr, safeTopK, safeFilterTags]
       }
 
       const result = await db.query<SearchResult>(sql, params)
