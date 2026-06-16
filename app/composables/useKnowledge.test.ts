@@ -208,6 +208,20 @@ describe('useKnowledge', () => {
       expect(params[2]).toEqual(['タグA'])
     })
 
+    it('filterTagNamesの前後スペースをトリムして渡す', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['  タグA  '])
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[2]).toEqual(['タグA'])
+    })
+
+    it('filterTagNamesが空白のみの場合はHAVINGなしSQLを使用する', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 5, ['', '  '])
+      const [sql] = mockDbQuery.mock.calls[0]
+      expect(sql).not.toContain('HAVING bool_or')
+    })
+
     it('検索中の再呼び出しは空配列を返す', async () => {
       const { searchNotes, isSearching } = useKnowledge()
       isSearching.value = true

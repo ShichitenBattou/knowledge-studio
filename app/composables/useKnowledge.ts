@@ -127,7 +127,7 @@ export function useKnowledge() {
     const trimmedQuery = query.trim()
     if (!trimmedQuery || isSearching.value) return []
     const safeTopK = Math.min(20, Math.max(1, Math.floor(topK)))
-    const safeFilterTags = filterTagNames.filter((t) => t.trim())
+    const safeFilterTags = filterTagNames.map((t) => t.trim()).filter(Boolean)
     isSearching.value = true
     try {
       const queryEmbedding = await generateEmbedding(trimmedQuery)
@@ -136,7 +136,7 @@ export function useKnowledge() {
       let sql: string
       let params: unknown[]
 
-      if (filterTagNames.length === 0) {
+      if (safeFilterTags.length === 0) {
         sql = `
           WITH ranked_notes AS (
             SELECT
