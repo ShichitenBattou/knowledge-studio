@@ -1,0 +1,11 @@
+{
+  "adrFile": "20260616_rag_browser_llm.md",
+  "title": "RAG（ブラウザ内LLM）と出典表示",
+  "status": "Proposed",
+  "summary": "@huggingface/transformersとonnx-community/Qwen2.5-0.5B-Instruct(q4)を使ったブラウザ内RAGを実装する。useRag.tsコンポーザブルがベクトル検索→プロンプト構築→ストリーミング推論を担い、専用ページ(app/pages/rag/index.vue)でチャットUIと出典表示(#8)を提供する。",
+  "relatedFiles": [
+    "app/composables/useRag.ts",
+    "app/composables/useRag.test.ts",
+    "app/pages/rag/index.vue"
+  ]
+}
