@@ -1,7 +1,7 @@
 # ADR: RAG（ブラウザ内LLM）と出典表示
 
 - **Date**: 2026-06-16
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #7 RAG（ブラウザ内LLM）/ #8 出典表示
 
 ---

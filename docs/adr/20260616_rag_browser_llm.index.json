@@ -1,7 +1,7 @@
 {
   "adrFile": "20260616_rag_browser_llm.md",
   "title": "RAG（ブラウザ内LLM）と出典表示",
-  "status": "Proposed",
+  "status": "Accepted",
   "summary": "埋め込みにTransformers.js・テキスト生成にWebLLM(@mlc-ai/web-llm)を使ったブラウザ内RAGを実装する。モデル選択UI(Qwen2.5-1.5BまたはPhi-3.5-mini)を設け、useRag.tsがベクトル検索→プロンプト構築→WebGPUストリーミング推論を担い、専用ページ(app/pages/rag/index.vue)でチャットUIと出典表示(#8)を提供する。",
   "relatedFiles": [
     "app/composables/useRag.ts",
