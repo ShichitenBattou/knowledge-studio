@@ -59,7 +59,9 @@ function addEditTag() {
 }
 
 function selectEditSuggestedTag(tagName: string) {
-  editingNote.tags.push(tagName)
+  if (!editingNote.tags.includes(tagName)) {
+    editingNote.tags.push(tagName)
+  }
   editTagInput.value = ''
 }
 

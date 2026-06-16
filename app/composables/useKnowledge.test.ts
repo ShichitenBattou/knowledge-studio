@@ -207,6 +207,20 @@ describe('useKnowledge', () => {
       expect(params[1]).toBe(5)
     })
 
+    it('topKが0の場合は1にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', 0)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(1)
+    })
+
+    it('topKが負数の場合は1にクランプする', async () => {
+      const { searchNotes } = useKnowledge()
+      await searchNotes('クエリ', -5)
+      const [, params] = mockDbQuery.mock.calls[0]
+      expect(params[1]).toBe(1)
+    })
+
     it('filterTagNamesの空文字は除去して渡す', async () => {
       const { searchNotes } = useKnowledge()
       await searchNotes('クエリ', 5, ['タグA', '', '  '])

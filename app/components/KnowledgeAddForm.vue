@@ -41,7 +41,9 @@ function addNewTag() {
 }
 
 function selectSuggestedTag(tagName: string) {
-  newNoteTags.value.push(tagName)
+  if (!newNoteTags.value.includes(tagName)) {
+    newNoteTags.value.push(tagName)
+  }
   newTagInput.value = ''
 }
 </script>
