@@ -143,6 +143,7 @@ export function useKnowledge() {
             FROM notes n
             LEFT JOIN note_tags nt ON n.id = nt.note_id
             LEFT JOIN tags t ON nt.tag_id = t.id
+            WHERE n.embedding IS NOT NULL
             GROUP BY n.id, n.note, n.created_at, n.embedding
           )
           SELECT id, note, created_at, tags, (1 - distance) AS similarity
@@ -161,6 +162,7 @@ export function useKnowledge() {
             FROM notes n
             LEFT JOIN note_tags nt ON n.id = nt.note_id
             LEFT JOIN tags t ON nt.tag_id = t.id
+            WHERE n.embedding IS NOT NULL
             GROUP BY n.id, n.note, n.created_at, n.embedding
             HAVING bool_or(t.name = ANY($3::text[]))
           )

@@ -186,5 +186,12 @@ describe('useKnowledge', () => {
       expect(result).toEqual([])
       expect(mockGenerateEmbedding).not.toHaveBeenCalled()
     })
+
+    it('generateEmbeddingが失敗した場合はisSearchingをfalseに戻す', async () => {
+      const { searchNotes, isSearching } = useKnowledge()
+      mockGenerateEmbedding.mockRejectedValueOnce(new Error('embedding失敗'))
+      await expect(searchNotes('クエリ')).rejects.toThrow('embedding失敗')
+      expect(isSearching.value).toBe(false)
+    })
   })
 })

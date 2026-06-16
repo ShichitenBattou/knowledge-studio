@@ -20,11 +20,12 @@ const searchFilterTags = ref<string[]>([])
 const searchResults = ref<SearchResult[]>([])
 
 async function handleSearch() {
-  searchResults.value = await searchNotes(
-    searchQuery.value,
-    searchTopK.value,
-    searchFilterTags.value,
-  )
+  const topK = Number.isFinite(searchTopK.value) && searchTopK.value >= 1 ? searchTopK.value : 5
+  try {
+    searchResults.value = await searchNotes(searchQuery.value, topK, searchFilterTags.value)
+  } catch (e) {
+    console.error('ベクトル検索に失敗しました', e)
+  }
 }
 
 function clearSearch() {
