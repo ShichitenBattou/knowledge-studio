@@ -77,12 +77,7 @@ function clearSearch() {
             >
               検索
             </UButton>
-            <UButton
-              color="neutral"
-              variant="ghost"
-              :disabled="!searchResults.length"
-              @click="clearSearch"
-            >
+            <UButton color="neutral" variant="ghost" :disabled="!hasSearched" @click="clearSearch">
               クリア
             </UButton>
           </div>
