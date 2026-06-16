@@ -30,11 +30,14 @@ const _selectedModel = ref<string>(RAG_MODELS[0].id)
 const _isGenerating = ref(false)
 const _streamingAnswer = ref('')
 const _sources = ref<RagSource[]>([])
+const _modelLoadError = ref('')
 
 export function _resetRagForTest() {
+  if (!import.meta.env.TEST) return
   _engine = null
   _isModelLoading.value = false
   _isModelLoaded.value = false
+  _modelLoadError.value = ''
   _modelLoadProgress.value = ''
   _selectedModel.value = RAG_MODELS[0].id
   _isGenerating.value = false
@@ -48,6 +51,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     _isModelLoading.value = true
     _isModelLoaded.value = false
     _modelLoadProgress.value = ''
+    _modelLoadError.value = ''
     try {
       _engine = await CreateMLCEngine(modelId, {
         initProgressCallback: (progress) => {
@@ -56,6 +60,9 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
       })
       _selectedModel.value = modelId
       _isModelLoaded.value = true
+    } catch (e) {
+      _engine = null
+      _modelLoadError.value = e instanceof Error ? e.message : 'モデルのロードに失敗しました'
     } finally {
       _isModelLoading.value = false
     }
@@ -108,6 +115,10 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
         _streamingAnswer.value = answer
       }
       return answer
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '生成中にエラーが発生しました'
+      _streamingAnswer.value = `エラー: ${msg}`
+      throw e
     } finally {
       _isGenerating.value = false
     }
@@ -117,6 +128,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     isModelLoading: _isModelLoading,
     isModelLoaded: _isModelLoaded,
     modelLoadProgress: _modelLoadProgress,
+    modelLoadError: _modelLoadError,
     isGenerating: _isGenerating,
     streamingAnswer: _streamingAnswer,
     sources: _sources,

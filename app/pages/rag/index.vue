@@ -7,6 +7,7 @@ const {
   isModelLoading,
   isModelLoaded,
   modelLoadProgress,
+  modelLoadError,
   isGenerating,
   streamingAnswer,
   sources,
@@ -65,6 +66,7 @@ async function handleGenerate() {
         <p v-if="isModelLoading && modelLoadProgress" class="text-sm text-muted">
           {{ modelLoadProgress }}
         </p>
+        <p v-if="modelLoadError" class="text-sm text-error">{{ modelLoadError }}</p>
         <p v-if="isModelLoaded" class="text-sm text-success">モデルの準備ができました</p>
       </div>
     </section>
@@ -84,8 +86,9 @@ async function handleGenerate() {
         />
         <div class="flex gap-4 items-center justify-between">
           <div class="flex items-center gap-2">
-            <label class="text-sm text-muted">参照件数 (top-k)</label>
+            <label for="top-k-input" class="text-sm text-muted">参照件数 (top-k)</label>
             <UInput
+              id="top-k-input"
               v-model.number="topK"
               type="number"
               class="w-20"

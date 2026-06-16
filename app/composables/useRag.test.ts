@@ -65,6 +65,15 @@ describe('useRag', () => {
       expect(mockCreateMLCEngine).not.toHaveBeenCalled()
     })
 
+    it('loadModel 失敗時は isModelLoaded が false のまま modelLoadError にメッセージを格納する', async () => {
+      mockCreateMLCEngine.mockRejectedValue(new Error('WebGPU not supported'))
+      const { loadModel, isModelLoaded, isModelLoading, modelLoadError } = useRag(mockSearchFn)
+      await loadModel('Qwen2.5-1.5B-Instruct-q4f16_1-MLC')
+      expect(isModelLoaded.value).toBe(false)
+      expect(isModelLoading.value).toBe(false)
+      expect(modelLoadError.value).toBe('WebGPU not supported')
+    })
+
     it('initProgressCallback でモデルロード進捗が更新される', async () => {
       const { loadModel, modelLoadProgress } = useRag(mockSearchFn)
       mockCreateMLCEngine.mockImplementation(
@@ -80,6 +89,8 @@ describe('useRag', () => {
 
   describe('generate', () => {
     beforeEach(async () => {
+      // _engine シングルトンを設定するため別インスタンスで loadModel を呼ぶ
+      // useRag は呼び出しごとに異なるオブジェクトを返すが内部の _engine は共有される
       const { loadModel } = useRag(mockSearchFn)
       await loadModel('Qwen2.5-1.5B-Instruct-q4f16_1-MLC')
     })
@@ -141,6 +152,14 @@ describe('useRag', () => {
       const { generate, streamingAnswer } = useRag(mockSearchFn)
       await generate('テスト')
       expect(streamingAnswer.value).toBe('Hello World')
+    })
+
+    it('searchFn が失敗した場合は isGenerating を false に戻し streamingAnswer にエラーを格納して再スローする', async () => {
+      mockSearchFn.mockRejectedValue(new Error('DB error'))
+      const { generate, isGenerating, streamingAnswer } = useRag(mockSearchFn)
+      await expect(generate('テスト')).rejects.toThrow('DB error')
+      expect(isGenerating.value).toBe(false)
+      expect(streamingAnswer.value).toContain('DB error')
     })
 
     it('エンジン未ロード時は空文字を返す', async () => {
