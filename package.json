@@ -18,6 +18,7 @@
   "dependencies": {
     "@electric-sql/pglite": "^0.4.6",
     "@huggingface/transformers": "^4.2.0",
+    "@mlc-ai/web-llm": "^0.2.84",
     "@nuxt/ui": "^4.8.0",
     "nuxt": "^4.4.6",
     "tailwindcss": "^4.3.0",
