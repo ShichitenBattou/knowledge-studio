@@ -33,7 +33,7 @@ const _sources = ref<RagSource[]>([])
 const _modelLoadError = ref('')
 
 export function _resetRagForTest() {
-  if (!import.meta.env.TEST) return
+  if (!import.meta.env.VITEST) return
   _engine = null
   _isModelLoading.value = false
   _isModelLoaded.value = false
@@ -74,6 +74,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
 
     _isGenerating.value = true
     _streamingAnswer.value = ''
+    _sources.value = []
 
     try {
       const results = await searchFn(query, topK)
