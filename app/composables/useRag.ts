@@ -127,10 +127,6 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
         streamingAnswer.value = answer
       }
       return answer
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : '生成中にエラーが発生しました'
-      streamingAnswer.value = `エラー: ${msg}`
-      throw e
     } finally {
       _generationLock = false
       isGenerating.value = false

@@ -166,12 +166,12 @@ describe('useRag', () => {
       expect(streamingAnswer.value).toBe('Hello World')
     })
 
-    it('searchFn が失敗した場合は isGenerating を false に戻し streamingAnswer にエラーを格納して再スローする', async () => {
+    it('searchFn が失敗した場合は isGenerating を false に戻して再スローする', async () => {
       mockSearchFn.mockRejectedValue(new Error('DB error'))
       const { generate, isGenerating, streamingAnswer } = useRag(mockSearchFn)
       await expect(generate('テスト')).rejects.toThrow('DB error')
       expect(isGenerating.value).toBe(false)
-      expect(streamingAnswer.value).toContain('DB error')
+      expect(streamingAnswer.value).toBe('')
     })
 
     it('エンジン未ロード時は空文字を返す', async () => {

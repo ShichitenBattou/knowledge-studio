@@ -37,11 +37,12 @@ async function handleLoadModel() {
 
 async function handleGenerate() {
   if (!query.value.trim() || isGenerating.value || !isModelLoaded.value) return
+  const safeTopK = Math.min(10, Math.max(1, Math.floor(topK.value)))
   generateError.value = ''
   try {
-    await generate(query.value.trim(), topK.value)
+    await generate(query.value.trim(), safeTopK)
   } catch (e) {
-    generateError.value = e instanceof Error ? e.message : '生成中にエラーが発生しました'
+    generateError.value = '生成中にエラーが発生しました'
     console.error('RAG生成エラー', e)
   }
 }
@@ -145,6 +146,7 @@ async function handleGenerate() {
           <button
             v-for="source in sources"
             :key="source.id"
+            type="button"
             class="w-full text-left p-3 rounded-lg border border-default bg-elevated hover:bg-muted transition-colors cursor-pointer"
             @click="openSourceModal(source)"
           >
