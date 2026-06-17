@@ -9,11 +9,20 @@ export interface SearchResult {
   similarity: number
 }
 
+let _dbInitPromise: Promise<void> | null = null
+
+function ensureDbInitialized(): Promise<void> {
+  if (!_dbInitPromise) {
+    _dbInitPromise = initializeKnowledgeDB()
+  }
+  return _dbInitPromise
+}
+
 export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<number[]>) {
   const isSearching = ref(false)
 
-  onMounted(async () => {
-    await initializeKnowledgeDB()
+  onMounted(() => {
+    ensureDbInitialized()
   })
 
   async function searchNotes(
@@ -27,6 +36,7 @@ export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<
     const safeFilterTags = filterTagNames.map((t) => t.trim()).filter(Boolean)
     isSearching.value = true
     try {
+      await ensureDbInitialized()
       const queryEmbedding = await generateEmbedding(trimmedQuery)
       const vectorStr = toPgVector(queryEmbedding)
 

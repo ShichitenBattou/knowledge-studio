@@ -6,6 +6,7 @@
   "relatedFiles": [
     "app/composables/useRag.ts",
     "app/composables/useRag.test.ts",
+    "app/composables/useKnowledgeSearch.ts",
     "app/pages/rag/index.vue"
   ]
 }
