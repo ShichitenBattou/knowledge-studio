@@ -2,7 +2,8 @@
 import { RAG_MODELS, useRag } from '~/composables/useRag'
 import type { RagSource } from '~/composables/useRag'
 
-const { searchNotes } = useKnowledgeSearch()
+const { generateEmbedding } = useEmbedding()
+const { searchNotes } = useKnowledgeSearch(generateEmbedding)
 const {
   isModelLoading,
   isModelLoaded,

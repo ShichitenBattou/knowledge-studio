@@ -20,7 +20,7 @@ export function useKnowledge() {
   const allNotes = reactive<Note[]>([])
   const allTags = reactive<Tag[]>([])
   const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
-  const { isSearching, searchNotes } = useKnowledgeSearch()
+  const { isSearching, searchNotes } = useKnowledgeSearch(generateEmbedding)
 
   onMounted(async () => {
     await initializeKnowledgeDB()

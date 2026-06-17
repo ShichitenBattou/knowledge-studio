@@ -130,11 +130,23 @@ describe('useRag', () => {
     })
 
     it('generate 中の再呼び出しは空文字を返し searchFn を呼ばない', async () => {
-      const { generate, isGenerating } = useRag(mockSearchFn)
-      isGenerating.value = true
-      const result = await generate('テスト')
-      expect(result).toBe('')
-      expect(mockSearchFn).not.toHaveBeenCalled()
+      const { generate } = useRag(mockSearchFn)
+      let resolveSearch!: (v: typeof MOCK_RESULTS) => void
+      mockSearchFn.mockReturnValueOnce(
+        new Promise<typeof MOCK_RESULTS>((r) => {
+          resolveSearch = r
+        }),
+      )
+
+      const first = generate('first')
+      const second = generate('second') // 1回目のawait前に2回目を呼ぶ
+      resolveSearch(MOCK_RESULTS)
+
+      const result2 = await second
+      await first
+
+      expect(result2).toBe('')
+      expect(mockSearchFn).toHaveBeenCalledTimes(1)
     })
 
     it('ナレッジが0件の場合は LLM を呼ばず固定メッセージを返す', async () => {

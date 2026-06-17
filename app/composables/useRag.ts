@@ -22,29 +22,29 @@ export const RAG_MODELS = [
 ] as const
 
 let _engine: MLCEngine | null = null
+let _isGenerating = false
 const _isModelLoading = ref(false)
 const _isModelLoaded = ref(false)
 const _modelLoadProgress = ref('')
 const _selectedModel = ref<string>(RAG_MODELS[0].id)
-const _isGenerating = ref(false)
-const _streamingAnswer = ref('')
-const _sources = ref<RagSource[]>([])
 const _modelLoadError = ref('')
 
 export function _resetRagForTest() {
   if (!import.meta.env.VITEST) return
   _engine = null
+  _isGenerating = false
   _isModelLoading.value = false
   _isModelLoaded.value = false
   _modelLoadError.value = ''
   _modelLoadProgress.value = ''
   _selectedModel.value = RAG_MODELS[0].id
-  _isGenerating.value = false
-  _streamingAnswer.value = ''
-  _sources.value = []
 }
 
 export function useRag(searchFn: (query: string, topK: number) => Promise<SearchResult[]>) {
+  const isGenerating = ref(false)
+  const streamingAnswer = ref('')
+  const sources = ref<RagSource[]>([])
+
   async function loadModel(modelId: string) {
     if (_isModelLoading.value) return
     _isModelLoading.value = true
@@ -69,15 +69,16 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
   }
 
   async function generate(query: string, topK: number = 5): Promise<string> {
-    if (_isGenerating.value || !_engine || !_isModelLoaded.value) return ''
+    if (_isGenerating || !_engine || !_isModelLoaded.value) return ''
 
-    _isGenerating.value = true
-    _streamingAnswer.value = ''
-    _sources.value = []
+    _isGenerating = true
+    isGenerating.value = true
+    streamingAnswer.value = ''
+    sources.value = []
 
     try {
       const results = await searchFn(query, topK)
-      _sources.value = results.map((r) => ({
+      sources.value = results.map((r) => ({
         id: r.id,
         note: r.note,
         similarity: r.similarity,
@@ -86,7 +87,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
 
       if (results.length === 0) {
         const msg = '関連するナレッジが見つかりませんでした。'
-        _streamingAnswer.value = msg
+        streamingAnswer.value = msg
         return msg
       }
 
@@ -113,15 +114,16 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
       for await (const chunk of stream) {
         const delta = chunk.choices[0]?.delta?.content ?? ''
         answer += delta
-        _streamingAnswer.value = answer
+        streamingAnswer.value = answer
       }
       return answer
     } catch (e) {
       const msg = e instanceof Error ? e.message : '生成中にエラーが発生しました'
-      _streamingAnswer.value = `エラー: ${msg}`
+      streamingAnswer.value = `エラー: ${msg}`
       throw e
     } finally {
-      _isGenerating.value = false
+      _isGenerating = false
+      isGenerating.value = false
     }
   }
 
@@ -130,9 +132,9 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     isModelLoaded: _isModelLoaded,
     modelLoadProgress: _modelLoadProgress,
     modelLoadError: _modelLoadError,
-    isGenerating: _isGenerating,
-    streamingAnswer: _streamingAnswer,
-    sources: _sources,
+    isGenerating,
+    streamingAnswer,
+    sources,
     selectedModel: _selectedModel,
     generate,
     loadModel,

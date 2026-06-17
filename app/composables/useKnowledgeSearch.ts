@@ -9,9 +9,8 @@ export interface SearchResult {
   similarity: number
 }
 
-export function useKnowledgeSearch() {
+export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<number[]>) {
   const isSearching = ref(false)
-  const { generateEmbedding } = useEmbedding()
 
   async function searchNotes(
     query: string,
