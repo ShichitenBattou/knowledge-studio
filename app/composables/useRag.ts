@@ -72,7 +72,8 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
       _isModelLoaded.value = true
     } catch (e) {
       _engine = null
-      _modelLoadError.value = e instanceof Error ? e.message : 'モデルのロードに失敗しました'
+      console.error('モデルのロードに失敗しました', e)
+      _modelLoadError.value = 'モデルのロードに失敗しました'
     } finally {
       _isModelLoading.value = false
     }

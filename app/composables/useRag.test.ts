@@ -71,7 +71,7 @@ describe('useRag', () => {
       await loadModel('Qwen2.5-1.5B-Instruct-q4f16_1-MLC')
       expect(isModelLoaded.value).toBe(false)
       expect(isModelLoading.value).toBe(false)
-      expect(modelLoadError.value).toBe('WebGPU not supported')
+      expect(modelLoadError.value).toBe('モデルのロードに失敗しました')
     })
 
     it('initProgressCallback でモデルロード進捗が更新される', async () => {
