@@ -2,7 +2,7 @@
 import { RAG_MODELS, useRag } from '~/composables/useRag'
 import type { RagSource } from '~/composables/useRag'
 
-const { searchNotes } = useKnowledge()
+const { searchNotes } = useKnowledgeSearch()
 const {
   isModelLoading,
   isModelLoaded,

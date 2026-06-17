@@ -1,7 +1,7 @@
 import { CreateMLCEngine } from '@mlc-ai/web-llm'
 import type { MLCEngine } from '@mlc-ai/web-llm'
 
-import type { SearchResult } from './useKnowledge'
+import type { SearchResult } from './useKnowledgeSearch'
 
 export interface RagSource {
   id: string
