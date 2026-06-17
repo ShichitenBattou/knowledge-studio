@@ -13,17 +13,16 @@ let _dbInitPromise: Promise<void> | null = null
 
 function ensureDbInitialized(): Promise<void> {
   if (!_dbInitPromise) {
-    _dbInitPromise = initializeKnowledgeDB()
+    _dbInitPromise = Promise.resolve(initializeKnowledgeDB()).catch((e) => {
+      _dbInitPromise = null
+      throw e
+    })
   }
   return _dbInitPromise
 }
 
 export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<number[]>) {
   const isSearching = ref(false)
-
-  onMounted(() => {
-    ensureDbInitialized()
-  })
 
   async function searchNotes(
     query: string,

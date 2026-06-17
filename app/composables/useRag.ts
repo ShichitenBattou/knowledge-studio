@@ -22,7 +22,7 @@ export const RAG_MODELS = [
 ] as const
 
 let _engine: MLCEngine | null = null
-let _isGenerating = false
+let _generationLock = false
 const _isModelLoading = ref(false)
 const _isModelLoaded = ref(false)
 const _modelLoadProgress = ref('')
@@ -32,7 +32,7 @@ const _modelLoadError = ref('')
 export function _resetRagForTest() {
   if (!import.meta.env.VITEST) return
   _engine = null
-  _isGenerating = false
+  _generationLock = false
   _isModelLoading.value = false
   _isModelLoaded.value = false
   _modelLoadError.value = ''
@@ -77,9 +77,9 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
   }
 
   async function generate(query: string, topK: number = 5): Promise<string> {
-    if (_isGenerating || !_engine || !_isModelLoaded.value) return ''
+    if (_generationLock || !_engine || !_isModelLoaded.value) return ''
 
-    _isGenerating = true
+    _generationLock = true
     isGenerating.value = true
     streamingAnswer.value = ''
     sources.value = []
@@ -130,7 +130,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
       streamingAnswer.value = `エラー: ${msg}`
       throw e
     } finally {
-      _isGenerating = false
+      _generationLock = false
       isGenerating.value = false
     }
   }
