@@ -51,6 +51,8 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     _engine = null
     _isModelLoaded.value = false
     _modelLoadError.value = ''
+    streamingAnswer.value = ''
+    sources.value = []
   }
 
   async function loadModel(modelId: string) {
