@@ -26,7 +26,7 @@ let _generationLock = false
 const _isModelLoading = ref(false)
 const _isModelLoaded = ref(false)
 const _modelLoadProgress = ref('')
-const _selectedModel = ref<string>(RAG_MODELS[0].id)
+const _selectedModel = ref<(typeof RAG_MODELS)[number]['id']>(RAG_MODELS[0].id)
 const _modelLoadError = ref('')
 
 export function _resetRagForTest() {
