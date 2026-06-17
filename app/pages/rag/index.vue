@@ -37,7 +37,9 @@ async function handleLoadModel() {
 
 async function handleGenerate() {
   if (!query.value.trim() || isGenerating.value || !isModelLoaded.value) return
-  const safeTopK = Math.min(10, Math.max(1, Math.floor(topK.value)))
+  const safeTopK = Number.isFinite(topK.value)
+    ? Math.min(10, Math.max(1, Math.floor(topK.value)))
+    : 5
   generateError.value = ''
   try {
     await generate(query.value.trim(), safeTopK)

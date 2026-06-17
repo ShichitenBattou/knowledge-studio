@@ -23,12 +23,9 @@ const isDev = import.meta.dev
 
 async function handleSearch() {
   if (!searchQuery.value.trim() || isSearching.value) return
+  const safeTopK = Number.isFinite(searchTopK.value) ? searchTopK.value : 5
   try {
-    searchResults.value = await searchNotes(
-      searchQuery.value,
-      searchTopK.value,
-      searchFilterTags.value,
-    )
+    searchResults.value = await searchNotes(searchQuery.value, safeTopK, searchFilterTags.value)
     hasSearched.value = true
   } catch (e) {
     console.error('ベクトル検索に失敗しました', e)
