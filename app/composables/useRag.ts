@@ -1,6 +1,5 @@
 import { CreateMLCEngine } from '@mlc-ai/web-llm'
 import type { MLCEngine } from '@mlc-ai/web-llm'
-import { ref } from 'vue'
 
 import type { SearchResult } from './useKnowledge'
 

@@ -133,12 +133,12 @@ async function handleGenerate() {
       </section>
 
       <!-- 出典 (#8) -->
-      <section v-if="sources.length">
+      <section v-if="!isGenerating">
         <h2 class="text-lg font-semibold mb-4">
           出典
           <UBadge color="neutral" variant="subtle" class="ml-2">{{ sources.length }}件</UBadge>
         </h2>
-        <div class="space-y-2">
+        <div v-if="sources.length" class="space-y-2">
           <button
             v-for="source in sources"
             :key="source.id"
@@ -166,6 +166,7 @@ async function handleGenerate() {
             </div>
           </button>
         </div>
+        <p v-else class="text-sm text-muted">参照したナレッジはありません</p>
       </section>
     </template>
 

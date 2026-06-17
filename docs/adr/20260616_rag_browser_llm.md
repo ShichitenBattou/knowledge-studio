@@ -156,7 +156,7 @@ Issue #8 の受け入れ条件をすべて `app/pages/rag/index.vue` で満た�
 
 ## Implementation Notes
 
-- `useRag.ts` は `useKnowledge` を内部でインポートし `searchNotes` を呼び出す
+- `useRag(searchFn)` は検索関数を引数で受け取る依存注入方式を採用する（Vue の `onMounted` ライフサイクル問題を避けるため、`useKnowledge` を内部インポートせず呼び出し元でバインドする）
 - WebLLM エンジンは `MLCEngine` のシングルトンとして保持する
 - モデルロード進捗は WebLLM の `initProgressCallback` コールバックで `modelLoadProgress` を更新する
 - ストリーミングは `engine.chat.completions.create({ stream: true })` の非同期イテレータで実装し、`delta.content` を `streamingAnswer.value` に逐次追記する
