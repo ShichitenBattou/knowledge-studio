@@ -31,7 +31,12 @@ export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<
   ): Promise<SearchResult[]> {
     const trimmedQuery = query.trim()
     if (!trimmedQuery || isSearching.value) return []
-    const safeTopK = Number.isFinite(topK) ? Math.min(20, Math.max(1, Math.floor(topK))) : 5
+    let safeTopK = Number.isFinite(topK) ? Math.floor(topK) : 5
+    if (20 < safeTopK) {
+      safeTopK = 20
+    } else if (safeTopK < 1) {
+      safeTopK = 1
+    }
     const safeFilterTags = filterTagNames.map((t) => t.trim()).filter(Boolean)
     isSearching.value = true
     try {
