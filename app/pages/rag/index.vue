@@ -15,6 +15,7 @@ const {
   selectedModel,
   generate,
   loadModel,
+  selectModel,
 } = useRag(searchNotes)
 
 const modelOptions = RAG_MODELS.map((m) => ({ label: m.label, value: m.id }))
@@ -56,12 +57,13 @@ async function handleGenerate() {
       <div class="space-y-3">
         <div class="flex gap-3 items-center">
           <USelect
-            v-model="selectedModel"
+            :model-value="selectedModel"
             :items="modelOptions"
             value-key="value"
             label-key="label"
             class="flex-1"
             :disabled="isModelLoading || isGenerating"
+            @update:model-value="selectModel"
           />
           <UButton
             :loading="isModelLoading"
@@ -172,15 +174,12 @@ async function handleGenerate() {
     </template>
 
     <!-- 出典モーダル -->
-    <UModal v-model:open="isSourceModalOpen">
+    <UModal v-model:open="isSourceModalOpen" title="ナレッジ全文">
       <template #body>
         <div class="p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-base font-semibold">ナレッジ全文</h3>
-            <UBadge v-if="selectedSourceNote" color="success" variant="subtle">
-              類似度 {{ selectedSourceNote.similarity.toFixed(2) }}
-            </UBadge>
-          </div>
+          <UBadge v-if="selectedSourceNote" color="success" variant="subtle" class="mb-4">
+            類似度 {{ selectedSourceNote.similarity.toFixed(2) }}
+          </UBadge>
           <p v-if="selectedSourceNote" class="text-sm whitespace-pre-wrap">
             {{ selectedSourceNote.note }}
           </p>

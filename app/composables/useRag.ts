@@ -45,6 +45,14 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
   const streamingAnswer = ref('')
   const sources = ref<RagSource[]>([])
 
+  function selectModel(modelId: string) {
+    if (_selectedModel.value === modelId) return
+    _selectedModel.value = modelId
+    _engine = null
+    _isModelLoaded.value = false
+    _modelLoadError.value = ''
+  }
+
   async function loadModel(modelId: string) {
     if (_isModelLoading.value) return
     _isModelLoading.value = true
@@ -138,5 +146,6 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     selectedModel: _selectedModel,
     generate,
     loadModel,
+    selectModel,
   }
 }

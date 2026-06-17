@@ -1,4 +1,4 @@
-import { db } from '~/db'
+import { db, initializeKnowledgeDB } from '~/db'
 import { toPgVector } from '~/utility'
 
 export interface SearchResult {
@@ -11,6 +11,10 @@ export interface SearchResult {
 
 export function useKnowledgeSearch(generateEmbedding: (text: string) => Promise<number[]>) {
   const isSearching = ref(false)
+
+  onMounted(async () => {
+    await initializeKnowledgeDB()
+  })
 
   async function searchNotes(
     query: string,
