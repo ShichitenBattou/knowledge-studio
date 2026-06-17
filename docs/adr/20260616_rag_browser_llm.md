@@ -37,7 +37,7 @@ Discussion #27 の方針に従い、ユーザーがモデルを選択できる U
 | モデル                              | VRAM目安 | 特徴             |
 | ----------------------------------- | -------- | ---------------- |
 | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | ~2GB     | 軽量・日本語対応 |
-| `Phi-3.5-mini-instruct-q4f16_1-MLC` | ~4GB     | 高品質・多言語   |
+| `Phi-4-mini-instruct-q4f16_1-MLC`   | ~4GB     | 高品質・多言語   |
 
 デフォルトは `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` とする（より広いデバイスで動作するため）。
 
@@ -150,7 +150,7 @@ Issue #8 の受け入れ条件をすべて `app/pages/rag/index.vue` で満た�
 
 追加依存なしで実装できるが、WebLLM に比べて大規模モデルの推論速度が遅く、Discussion #27 の合意と異なる。
 
-### Phi-3.5-mini-instruct をデフォルトモデルにする
+### Phi-4-mini-instruct をデフォルトモデルにする
 
 品質は高いが VRAM ~4GB 必要。デフォルトは低スペックデバイスでも動作する Qwen2.5-1.5B とし、ユーザーが任意で切り替えられる設計にする。
 
@@ -160,5 +160,8 @@ Issue #8 の受け入れ条件をすべて `app/pages/rag/index.vue` で満た�
 - WebLLM エンジンは `MLCEngine` のシングルトンとして保持する
 - モデルロード進捗は WebLLM の `initProgressCallback` コールバックで `modelLoadProgress` を更新する
 - ストリーミングは `engine.chat.completions.create({ stream: true })` の非同期イテレータで実装し、`delta.content` を `streamingAnswer.value` に逐次追記する
-- 並行実行防止のため `isGenerating` が `true` の間は `generate()` を即時 `return` する
+- 並行実行防止のためモジュールスコープの `_isGenerating` boolean ロックを用い、`generate()` を即時 `return` する
+- UI 向けステート（`isGenerating`, `streamingAnswer`, `sources`）は `useRag()` 呼び出しごとのローカル ref として保持し、モジュール間の干渉を防ぐ
+- 検索専用コンポーザブル `useKnowledgeSearch(generateEmbedding)` に `searchNotes` を分離し、RAG ページで不要な live query 購読が発生しないようにする
+- `generateEmbedding` は呼び出し元から DI で注入することで `useEmbedding()` の二重呼び出しを防ぐ
 - WebGPU 非対応ブラウザでは `loadModel()` 呼び出し時にエラーを捕捉してユーザーに通知する

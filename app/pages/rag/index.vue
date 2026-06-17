@@ -61,14 +61,14 @@ async function handleGenerate() {
             value-key="value"
             label-key="label"
             class="flex-1"
-            :disabled="isModelLoading || isModelLoaded"
+            :disabled="isModelLoading || isGenerating"
           />
           <UButton
             :loading="isModelLoading"
-            :disabled="isModelLoaded || isModelLoading"
+            :disabled="isModelLoading || isGenerating"
             @click="handleLoadModel"
           >
-            {{ isModelLoaded ? 'ロード済み' : 'モデルをロード' }}
+            {{ isModelLoaded ? 'モデルを切り替え' : 'モデルをロード' }}
           </UButton>
         </div>
         <p v-if="isModelLoading && modelLoadProgress" class="text-sm text-muted">
