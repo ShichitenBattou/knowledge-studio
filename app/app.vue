@@ -23,6 +23,12 @@ const items = computed<NavigationMenuItem[]>(() => [
     active: route.path.startsWith('/knowledge'),
   },
   {
+    label: 'RAG',
+    to: '/rag',
+    icon: 'i-lucide-bot',
+    active: route.path.startsWith('/rag'),
+  },
+  {
     label: 'PGlite',
     to: '/pglite',
     icon: 'i-lucide-database',

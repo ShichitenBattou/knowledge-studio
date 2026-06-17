@@ -16,8 +16,8 @@ export const RAG_MODELS = [
     label: 'Qwen2.5-1.5B（軽量・日本語対応, ~2GB）',
   },
   {
-    id: 'Phi-3.5-mini-instruct-q4f16_1-MLC',
-    label: 'Phi-3.5-mini（高品質, ~4GB）',
+    id: 'Phi-4-mini-instruct-q4f16_1-MLC',
+    label: 'Phi-4-mini（高品質, ~4GB）',
   },
 ] as const
 
