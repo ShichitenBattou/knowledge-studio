@@ -10,6 +10,8 @@ export interface RagSource {
   tags: string[]
 }
 
+const SIMILARITY_THRESHOLD = 0.6
+
 export const RAG_MODELS = [
   {
     id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
@@ -88,7 +90,9 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     sources.value = []
 
     try {
-      const results = await searchFn(query, topK)
+      const results = (await searchFn(query, topK)).filter(
+        (r) => r.similarity >= SIMILARITY_THRESHOLD,
+      )
       sources.value = results.map((r) => ({
         id: r.id,
         note: r.note,
