@@ -23,6 +23,8 @@ export const RAG_MODELS = [
   },
 ] as const
 
+export type RagModelId = (typeof RAG_MODELS)[number]['id']
+
 let _engine: MLCEngine | null = null
 let _generationLock = false
 const _isModelLoading = ref(false)
@@ -47,7 +49,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
   const streamingAnswer = ref('')
   const sources = ref<RagSource[]>([])
 
-  function selectModel(modelId: string) {
+  function selectModel(modelId: RagModelId) {
     if (_selectedModel.value === modelId) return
     _selectedModel.value = modelId
     _engine = null
@@ -57,7 +59,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
     sources.value = []
   }
 
-  async function loadModel(modelId: string) {
+  async function loadModel(modelId: RagModelId) {
     if (_isModelLoading.value) return
     _isModelLoading.value = true
     _isModelLoaded.value = false
