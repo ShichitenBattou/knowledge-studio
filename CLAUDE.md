@@ -55,6 +55,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Pythonのコードはuvを使って実行すること
 - ブランチ名は英語で記述すること
+- レビュー等の指摘対応をする場合は他にも対応すべき部分がないか水平展開を実施すること
 
 ## コマンド
 
