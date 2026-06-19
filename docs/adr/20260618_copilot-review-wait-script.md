@@ -1,7 +1,7 @@
 # ADR: Copilotレビュー完了待機スクリプトの実装
 
 - **Date**: 2026-06-18
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #33
 
 ---
