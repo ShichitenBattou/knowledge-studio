@@ -23,8 +23,9 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_copilot_review_count(pr_number: int) -> int:
+    # --paginate fetches all pages; --slurp merges them into an array of arrays
     result = subprocess.run(
-        ["gh", "api", f"repos/{{owner}}/{{repo}}/pulls/{pr_number}/reviews"],
+        ["gh", "api", "--paginate", "--slurp", f"repos/{{owner}}/{{repo}}/pulls/{pr_number}/reviews"],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,
@@ -33,13 +34,15 @@ def get_copilot_review_count(pr_number: int) -> int:
         print(f"[error] gh api failed: {result.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
     try:
-        reviews = json.loads(result.stdout)
+        pages = json.loads(result.stdout)
     except json.JSONDecodeError as e:
         print(f"[error] Failed to parse JSON response: {e}", file=sys.stderr)
         sys.exit(1)
-    if not isinstance(reviews, list):
+    if not isinstance(pages, list):
         print(f"[error] Unexpected response format: {result.stdout[:200]}", file=sys.stderr)
         sys.exit(1)
+    # Flatten pages (each page is a list of reviews)
+    reviews = [r for page in pages for r in (page if isinstance(page, list) else [])]
     return sum(1 for r in reviews if r.get("user", {}).get("login") == COPILOT_LOGIN)
 
 
