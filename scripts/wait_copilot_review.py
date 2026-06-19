@@ -17,6 +17,7 @@ import time
 COPILOT_LOGIN = "copilot-pull-request-reviewer[bot]"
 POLL_INTERVAL = 30
 TIMEOUT_SECONDS = 30 * 60  # 30 minutes
+GH_TIMEOUT = 60  # seconds before giving up on a single gh api call
 
 # Resolve repo root from this script's location (scripts/ → repo root)
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,12 +25,17 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def get_copilot_review_count(pr_number: int) -> int:
     # --paginate fetches all pages; --slurp merges them into an array of arrays
-    result = subprocess.run(
-        ["gh", "api", "--paginate", "--slurp", f"repos/{{owner}}/{{repo}}/pulls/{pr_number}/reviews"],
-        capture_output=True,
-        text=True,
-        cwd=REPO_ROOT,
-    )
+    try:
+        result = subprocess.run(
+            ["gh", "api", "--paginate", "--slurp", f"repos/{{owner}}/{{repo}}/pulls/{pr_number}/reviews"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            timeout=GH_TIMEOUT,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"[error] gh api timed out after {GH_TIMEOUT}s", file=sys.stderr)
+        sys.exit(1)
     if result.returncode != 0:
         print(f"[error] gh api failed: {result.stderr.strip()}", file=sys.stderr)
         sys.exit(1)
@@ -61,10 +67,10 @@ def main() -> None:
     print(f"[wait_copilot_review] PR #{pr_number} — baseline Copilot reviews: {baseline}")
     print(f"[wait_copilot_review] Polling every {POLL_INTERVAL}s (timeout: {TIMEOUT_SECONDS // 60}min)...")
 
-    start = time.time()
+    start = time.monotonic()
     while True:
         time.sleep(POLL_INTERVAL)
-        elapsed = int(time.time() - start)
+        elapsed = int(time.monotonic() - start)
 
         if elapsed >= TIMEOUT_SECONDS:
             print("[wait_copilot_review] Timeout reached. Copilot review not detected.", file=sys.stderr)
