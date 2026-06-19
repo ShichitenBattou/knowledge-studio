@@ -63,7 +63,7 @@ Claude Code はこのスクリプトを実行し、終了を待ってから次�
 
 ルール内容:
 
-1. Copilot レビューを依頼したら `uv run python scripts/wait_copilot_review.py <PR番号>` を実行してスクリプルが終了するまで待機する
+1. Copilot レビューを依頼したら `uv run python scripts/wait_copilot_review.py <PR番号>` を実行してスクリプトが終了するまで待機する
 2. スクリプト終了後、Claude Code は Copilot のレビューコメント（`gh pr view <PR番号> --comments` 等）を自律的に取得する
 3. 指摘内容を修正・commit・push し、Copilot へ再レビューを依頼する
 4. 再依頼後はスクリプトを再起動し、上記 1〜3 を指摘がなくなるまで繰り返す
