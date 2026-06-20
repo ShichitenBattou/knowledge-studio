@@ -57,7 +57,7 @@ def get_copilot_review_count(pr_number: int) -> int:
             print(f"[error] Page {i} has unexpected format (expected list, got {type(page).__name__})", file=sys.stderr)
             sys.exit(1)
         reviews.extend(page)
-    return sum(1 for r in reviews if r.get("user", {}).get("login") == COPILOT_LOGIN)
+    return sum(1 for r in reviews if (r.get("user") or {}).get("login") == COPILOT_LOGIN)
 
 
 def main() -> None:
