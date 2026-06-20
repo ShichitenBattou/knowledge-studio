@@ -51,6 +51,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 概要をまとめる為に「<年月日>\_<作業概要(英語で)>.index.json」も作成すること
   - jsonにはadrFile, title, status, summary, relatedFilesを含める事
 
+### Copilotレビューの自律対応サイクル
+
+PRにCopilotレビューを依頼した後は、以下のサイクルを**Claude Code自身が自律的に**実施すること。
+
+1. `uv run python scripts/wait_copilot_review.py <PR番号>` を実行してスクリプトが終了するまで待機する
+2. スクリプト終了後、`gh pr view <PR番号> --json reviews --jq '.reviews[] | select(.author.login=="copilot-pull-request-reviewer[bot]")'` 等でCopilotのレビューコメントを取得する
+3. 指摘内容を修正・commit・pushし、Copilotへ再レビューを依頼する
+4. 再依頼後はスクリプトを再起動し、指摘がなくなるまで1〜4を繰り返す
+
+**注意**: スクリプトが終了するまでフィードバック確認・対応を開始しないこと。
+
+**監理者チェック**: Copilotへの依頼が**3回**を超えたら、自律サイクルを一時停止して監理者に現状報告・確認を行うこと。根本的な方針ずれや解決策の乖離を防ぐためのインターバルとして機能させる。
+
 ### その他のルール
 
 - Pythonのコードはuvを使って実行すること
