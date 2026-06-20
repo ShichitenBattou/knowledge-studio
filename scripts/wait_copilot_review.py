@@ -33,6 +33,9 @@ def get_copilot_review_count(pr_number: int) -> int:
             cwd=REPO_ROOT,
             timeout=GH_TIMEOUT,
         )
+    except FileNotFoundError:
+        print("[error] 'gh' command not found. Install the GitHub CLI and ensure it is in PATH.", file=sys.stderr)
+        sys.exit(1)
     except subprocess.TimeoutExpired:
         print(f"[error] gh api timed out after {GH_TIMEOUT}s", file=sys.stderr)
         sys.exit(1)
@@ -47,8 +50,13 @@ def get_copilot_review_count(pr_number: int) -> int:
     if not isinstance(pages, list):
         print(f"[error] Unexpected response format: {result.stdout[:200]}", file=sys.stderr)
         sys.exit(1)
-    # Flatten pages (each page is a list of reviews)
-    reviews = [r for page in pages for r in (page if isinstance(page, list) else [])]
+    # Flatten pages; each page must be a list — error out if any page has unexpected format
+    reviews = []
+    for i, page in enumerate(pages):
+        if not isinstance(page, list):
+            print(f"[error] Page {i} has unexpected format (expected list, got {type(page).__name__})", file=sys.stderr)
+            sys.exit(1)
+        reviews.extend(page)
     return sum(1 for r in reviews if r.get("user", {}).get("login") == COPILOT_LOGIN)
 
 
