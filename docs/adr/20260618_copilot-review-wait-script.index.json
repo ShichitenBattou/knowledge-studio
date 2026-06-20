@@ -3,5 +3,8 @@
   "title": "Copilotレビュー完了待機スクリプトの実装",
   "status": "Accepted",
   "summary": "Copilotレビュー依頼後の完了待機をポーリングスクリプト（scripts/wait_copilot_review.py）で固定化し、CLAUDE.mdに汎用ルールとして追記する。ベースラインカウント方式でレビュー件数の増加を検知して通知する。",
-  "relatedFiles": ["scripts/wait_copilot_review.py", "CLAUDE.md"]
+  "relatedFiles": [
+    "scripts/wait_copilot_review.py",
+    "CLAUDE.md"
+  ]
 }
