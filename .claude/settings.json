@@ -4,6 +4,11 @@
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
       "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(ls *)",
+      "Bash(cd *)",
+      "Bash(gh *)",
+      "Bash(uv run python scripts/*)",
       "mcp__serena__initial_instructions",
       "mcp__serena__get_symbols_overview",
       "mcp__serena__find_symbol",
@@ -33,7 +38,7 @@
       "mcp__github__create_pull_request",
       "mcp__github__update_pull_request"
     ],
-    "ask": ["Bash(gh *)", "Bash(python *)", "Bash(python3 *)"]
+    "ask": ["Bash(python *)", "Bash(python3 *)"]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": ["serena"]
