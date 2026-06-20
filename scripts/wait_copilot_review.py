@@ -77,7 +77,6 @@ def main() -> None:
 
     start = time.monotonic()
     while True:
-        time.sleep(POLL_INTERVAL)
         elapsed = int(time.monotonic() - start)
 
         if elapsed >= TIMEOUT_SECONDS:
@@ -90,6 +89,8 @@ def main() -> None:
         if count > baseline:
             print(f"[wait_copilot_review] New Copilot review detected! (total: {count})")
             sys.exit(0)
+
+        time.sleep(POLL_INTERVAL)
 
 
 if __name__ == "__main__":
