@@ -58,7 +58,7 @@ PRにCopilotレビューを依頼した後は、以下のサイクルを**Claude
 1. `uv run python scripts/wait_copilot_review.py <PR番号>` を実行してスクリプトが終了するまで待機する
 2. スクリプト終了後、`gh pr view <PR番号> --json reviews --jq '.reviews[] | select(.author.login=="copilot-pull-request-reviewer[bot]")'` 等でCopilotのレビューコメントを取得する
 3. 指摘内容を修正・commit・pushし、Copilotへ再レビューを依頼する
-4. 再依頼後はスクリプトを再起動し、指摘がなくなるまで1〜3を繰り返す
+4. 再依頼後はスクリプトを再起動し、指摘がなくなるまで1〜4を繰り返す
 
 **注意**: スクリプトが終了するまでフィードバック確認・対応を開始しないこと。
 
