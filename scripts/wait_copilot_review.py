@@ -25,6 +25,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def get_copilot_review_count(pr_number: int) -> int:
     # --paginate fetches all pages; --slurp merges them into an array of arrays
+    # {owner} and {repo} are gh CLI template placeholders resolved from the git remote (cwd=REPO_ROOT)
     try:
         result = subprocess.run(
             ["gh", "api", "--paginate", "--slurp", f"repos/{{owner}}/{{repo}}/pulls/{pr_number}/reviews"],

@@ -87,7 +87,7 @@ Claude Code はこのスクリプトを実行し、終了を待ってから次�
 ## Implementation Notes
 
 - Copilot bot のログイン名は `"copilot-pull-request-reviewer[bot]"` を使用する
-- `gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews` でレビューリストを取得しフィルタリング
+- `gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews` でレビューリストを取得しフィルタリング（`{owner}` / `{repo}` は `gh` CLI がカレントディレクトリの git remote から自動解決するテンプレートプレースホルダー）
 - タイムアウト設定（例: 30 分）を追加しておくと無限ポーリングを防げる（任意）
 - Claude Code がコメントを取得する方法は `gh pr view <PR番号> --json reviews` や `gh api` で取得する
 - スクリプト終了後に Claude Code がコメントを読む手順は CLAUDE.md のルールとして明記する
