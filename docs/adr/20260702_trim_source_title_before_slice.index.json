@@ -1,0 +1,7 @@
+{
+  "adrFile": "20260702_trim_source_title_before_slice.md",
+  "title": "出典タイトルの先頭30文字スライス前にトリム処理を追加する",
+  "status": "Accepted",
+  "summary": "app/pages/rag/index.vue の出典タイトル表示で、slice(0, 30)の前にtrim()を追加し、ノート先頭の空白・改行によるタイトル空白化を防ぐ。",
+  "relatedFiles": ["app/pages/rag/index.vue"]
+}

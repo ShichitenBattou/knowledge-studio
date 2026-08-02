@@ -157,7 +157,8 @@ async function handleGenerate() {
           >
             <div class="flex justify-between items-start gap-2">
               <p class="text-sm flex-1 truncate">
-                {{ source.note.slice(0, 30) }}{{ source.note.length > 30 ? '...' : '' }}
+                {{ source.note.trim().slice(0, 30)
+                }}{{ source.note.trim().length > 30 ? '...' : '' }}
               </p>
               <UBadge color="success" variant="subtle" class="shrink-0">
                 {{ source.similarity.toFixed(2) }}
