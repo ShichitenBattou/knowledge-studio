@@ -1,7 +1,7 @@
 # ADR: 出典タイトルの先頭30文字スライス前にトリム処理を追加する
 
 - **Date**: 2026-07-02
-- **Status**: Proposed
+- **Status**: Accepted
 - **Issue**: #35
 
 ---
