@@ -1,0 +1,2 @@
+- [プロジェクト概要と技術スタック](project_overview.md) — Nuxt 4 SPA、PGlite(WASM)、Transformers.js、SSR無効のアーキテクチャ概要
+- [コードスタイル規約](project_code_style.md) — Prettier/ESLint導入後の統一スタイル（2スペースインデント、シングルクォート、セミコロンなし、trailing comma all）
