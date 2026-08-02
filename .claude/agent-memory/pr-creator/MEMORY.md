@@ -1,1 +1,2 @@
 - [GitHub Context](github_context.md) — Repository, user, and PR creation technical details
+- [PR #36 (Issue #33)](pr-creation-33-copilot-review-script.md) — Copilot review wait script PR
