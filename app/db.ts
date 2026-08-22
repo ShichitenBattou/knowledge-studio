@@ -2,10 +2,12 @@ import { PGlite } from '@electric-sql/pglite'
 import { live, type PGliteWithLive } from '@electric-sql/pglite/live'
 import { vector } from '@electric-sql/pglite/vector'
 
+const base = import.meta.env.BASE_URL
+
 const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
-  WebAssembly.compileStreaming(fetch('/pglite/pglite.wasm')),
-  WebAssembly.compileStreaming(fetch('/pglite/initdb.wasm')),
-  fetch('/pglite/pglite.data').then((r) => r.blob()),
+  WebAssembly.compileStreaming(fetch(`${base}pglite/pglite.wasm`)),
+  WebAssembly.compileStreaming(fetch(`${base}pglite/initdb.wasm`)),
+  fetch(`${base}pglite/pglite.data`).then((r) => r.blob()),
 ])
 
 const vectorWithPublicPath = {
@@ -14,7 +16,7 @@ const vectorWithPublicPath = {
     const result = await vector.setup(pg, opts)
     return {
       ...result,
-      bundlePath: new URL('/pglite/vector.tar.gz', location.href),
+      bundlePath: new URL(`${base}pglite/vector.tar.gz`, location.href),
     }
   },
 }
