@@ -19,11 +19,20 @@ export interface Note {
 export function useKnowledge() {
   const allNotes = reactive<Note[]>([])
   const allTags = reactive<Tag[]>([])
+  const dbError = ref<string | null>(null)
   const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
   const { isSearching, searchNotes } = useKnowledgeSearch(generateEmbedding)
 
+  let initPromise: Promise<void> | null = null
+
   onMounted(async () => {
-    await initializeKnowledgeDB()
+    initPromise = initializeKnowledgeDB()
+    try {
+      await initPromise
+    } catch (err) {
+      dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
+      return
+    }
     db.live.query<Note>(
       `SELECT n.id, n.note, n.created_at,
                     COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags
@@ -43,6 +52,7 @@ export function useKnowledge() {
   })
 
   async function handleCreate(text: string, tagNames: string[]): Promise<void> {
+    await initPromise
     const noteId = crypto.randomUUID()
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
@@ -72,6 +82,7 @@ export function useKnowledge() {
   }
 
   async function handleUpdate(id: string, text: string, tagNames: string[]): Promise<void> {
+    await initPromise
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
       await tx.query('UPDATE notes SET note = $1, embedding = $2 WHERE id = $3', [
@@ -101,22 +112,26 @@ export function useKnowledge() {
   }
 
   async function deleteNote(id: string): Promise<void> {
+    await initPromise
     await db.query('DELETE FROM notes WHERE id = $1', [id])
   }
 
   async function deleteTag(tag: Tag): Promise<void> {
+    await initPromise
     await db.query('DELETE FROM tags WHERE id = $1', [tag.id])
   }
 
   async function renameTag(id: string, name: string): Promise<void> {
     const trimmed = name.trim()
     if (!trimmed) return
+    await initPromise
     await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
   }
 
   return {
     allNotes,
     allTags,
+    dbError,
     isEmbeddingLoading,
     isSearching,
     handleCreate,

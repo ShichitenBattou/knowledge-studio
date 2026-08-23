@@ -2,36 +2,108 @@ import { PGlite } from '@electric-sql/pglite'
 import { live, type PGliteWithLive } from '@electric-sql/pglite/live'
 import { vector } from '@electric-sql/pglite/vector'
 
-const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
-  WebAssembly.compileStreaming(fetch('/pglite/pglite.wasm')),
-  WebAssembly.compileStreaming(fetch('/pglite/initdb.wasm')),
-  fetch('/pglite/pglite.data').then((r) => r.blob()),
-])
+const state: { db: PGliteWithLive | null } = { db: null }
 
-const vectorWithPublicPath = {
-  name: vector.name,
-  setup: async (pg: PGlite, opts: Record<string, unknown>) => {
-    const result = await vector.setup(pg, opts)
-    return {
-      ...result,
-      bundlePath: new URL('/pglite/vector.tar.gz', location.href),
-    }
-  },
-}
+let _resolveDbReady!: () => void
+let _rejectDbReady!: (err: Error) => void
+export const dbReady = new Promise<void>((resolve, reject) => {
+  _resolveDbReady = resolve
+  _rejectDbReady = reject
+})
+dbReady.catch(() => {})
 
-export const db: PGliteWithLive = await PGlite.create({
-  pgliteWasmModule,
-  initdbWasmModule,
-  fsBundle,
-  extensions: {
-    live,
-    vector: vectorWithPublicPath,
+let _resolveSchemaReady!: () => void
+let _rejectSchemaReady!: (err: Error) => void
+// schemaReady resolves after initializeKnowledgeDB() completes schema setup.
+// Mutation handlers should await this instead of dbReady.
+export const schemaReady = new Promise<void>((resolve, reject) => {
+  _resolveSchemaReady = resolve
+  _rejectSchemaReady = reject
+})
+schemaReady.catch(() => {})
+
+export const db = new Proxy({} as PGliteWithLive, {
+  get(_target, prop) {
+    if (!state.db) throw new Error('DB not initialized')
+    const value = Reflect.get(state.db, prop, state.db)
+    return typeof value === 'function' ? value.bind(state.db) : value
   },
-  dataDir: 'idb://knowledge-studio-pglite',
 })
 
+let _baseURL: string | null = null
+let _startPromise: Promise<void> | null = null
+let _terminalError: Error | null = null
+
+export function configureDB(baseURL: string): void {
+  _baseURL = baseURL
+}
+
+export function rejectDB(err: Error): void {
+  _terminalError = err
+  _rejectDbReady(err)
+  _rejectSchemaReady(err)
+}
+
+export function startDB(): Promise<void> {
+  if (!_startPromise) {
+    if (_terminalError) {
+      // Already terminally rejected (e.g. crossOriginIsolated check failed); propagate original error.
+      _startPromise = Promise.reject(_terminalError)
+      _startPromise.catch(() => {})
+    } else if (!_baseURL) {
+      const err = new Error('DB not configured: configureDB must be called first')
+      _terminalError = err
+      _rejectDbReady(err)
+      _startPromise = Promise.reject(err)
+      _startPromise.catch(() => {})
+    } else {
+      _startPromise = createDB(_baseURL)
+    }
+  }
+  return _startPromise
+}
+
+async function createDB(baseURL: string): Promise<void> {
+  try {
+    const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
+      WebAssembly.compileStreaming(fetch(`${baseURL}pglite/pglite.wasm`)),
+      WebAssembly.compileStreaming(fetch(`${baseURL}pglite/initdb.wasm`)),
+      fetch(`${baseURL}pglite/pglite.data`).then((r) => r.blob()),
+    ])
+
+    const vectorWithPublicPath = {
+      name: vector.name,
+      setup: async (pg: PGlite, opts: Record<string, unknown>) => {
+        const result = await vector.setup(pg, opts)
+        return {
+          ...result,
+          bundlePath: new URL(`${baseURL}pglite/vector.tar.gz`, location.href),
+        }
+      },
+    }
+
+    state.db = await PGlite.create({
+      pgliteWasmModule,
+      initdbWasmModule,
+      fsBundle,
+      extensions: {
+        live,
+        vector: vectorWithPublicPath,
+      },
+      dataDir: 'idb://knowledge-studio-pglite',
+    })
+    _resolveDbReady()
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    _rejectDbReady(error)
+    throw error
+  }
+}
+
 export async function initializeKnowledgeDB(): Promise<void> {
-  await db.exec(`
+  try {
+    await startDB()
+    await db.exec(`
         CREATE EXTENSION IF NOT EXISTS vector;
         CREATE TABLE IF NOT EXISTS notes (
             id UUID PRIMARY KEY,
@@ -52,4 +124,10 @@ export async function initializeKnowledgeDB(): Promise<void> {
         CREATE INDEX IF NOT EXISTS note_tags_note_id_idx ON note_tags(note_id);
         CREATE INDEX IF NOT EXISTS note_tags_tag_id_idx ON note_tags(tag_id);
     `)
+    _resolveSchemaReady()
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    _rejectSchemaReady(error)
+    throw error
+  }
 }

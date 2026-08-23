@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { pipeline } from '@huggingface/transformers'
 import { toPgVector } from '~/utility'
-import { db } from '~/db'
+import { db, startDB } from '~/db'
 import { v4 as uuidv4 } from 'uuid'
 
 const note = ref('')
 const notes = reactive<Note[]>([])
 const loading = ref(false)
+const dbError = ref<string | null>(null)
+
+let pageInitPromise: Promise<void> | null = null
 
 class Note {
   id: string = uuidv4()
@@ -31,9 +34,14 @@ class Note {
 }
 
 onMounted(async () => {
-  await initializeDB()
-
-  await initializeThisPage()
+  try {
+    pageInitPromise = initializeDB()
+    await pageInitPromise
+    await initializeThisPage()
+  } catch (err) {
+    dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
+    loading.value = false
+  }
 })
 
 async function initializeThisPage() {
@@ -55,21 +63,21 @@ async function initializeThisPage() {
 
 async function initializeDB() {
   loading.value = true
-
-  db.query('CREATE EXTENSION IF NOT EXISTS vector').then(() => {
-    console.log('Vector extension created')
-  })
-
-  db.query(
+  await startDB()
+  await db.query('CREATE EXTENSION IF NOT EXISTS vector')
+  await db.query(
     'CREATE TABLE IF NOT EXISTS notes (id UUID PRIMARY KEY, note TEXT NOT NULL, embedding vector(384))',
-  ).then(() => {
-    console.log('Table created')
-  })
+  )
 }
 
 async function insertNote(note: string) {
   loading.value = true
-
+  try {
+    await pageInitPromise
+  } catch {
+    loading.value = false
+    return
+  }
   const id = crypto.randomUUID()
 
   const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-V2')
@@ -95,15 +103,28 @@ async function insertNote(note: string) {
     })
 }
 
-function resetNotes() {
+async function resetNotes() {
+  try {
+    await pageInitPromise
+  } catch {
+    return
+  }
   db.query('DELETE FROM notes').then(() => {
     console.log('Notes reset')
   })
 }
 
 async function resetDB() {
-  await db.exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
-  await initializeDB()
+  try {
+    await pageInitPromise
+  } catch {
+    return
+  }
+  pageInitPromise = (async () => {
+    await db.exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
+    await initializeDB()
+  })()
+  await pageInitPromise
   await initializeThisPage()
   console.log('Database reset')
 }
@@ -130,6 +151,15 @@ const columns = [
 <template>
   <UContainer>
     <h1>PGlite</h1>
+
+    <UAlert
+      v-if="dbError"
+      color="error"
+      variant="subtle"
+      class="mb-4"
+      title="データベースエラー"
+      :description="dbError"
+    />
 
     <UContainer class="pb-3">
       <ULabel>Insert a note:</ULabel>

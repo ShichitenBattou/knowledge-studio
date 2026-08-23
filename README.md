@@ -40,36 +40,23 @@ bun run dev
 
 ## Production
 
-Build the application for production:
+静的サイトを生成する：
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+npm run generate
 ```
 
-Locally preview production build:
+出力先は `.output/public/`。
 
-```bash
-# npm
-npm run preview
+## デプロイ（GitHub Pages）
 
-# pnpm
-pnpm preview
+`master` ブランチへのプッシュで GitHub Actions が自動デプロイします。
 
-# yarn
-yarn preview
+**初回のみ**、リポジトリの `Settings > Pages > Source` を **GitHub Actions** に変更してください。
 
-# bun
-bun run preview
-```
+デプロイ先: `https://ShichitenBattou.github.io/knowledge-studio/`
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### 仕組みのメモ
+
+GitHub Pages はカスタム HTTP ヘッダーを設定できないため、PGlite（WebAssembly）が必要とする `SharedArrayBuffer` をそのままでは使えない。
+`public/coi-serviceworker.js`（[coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker)）をサービスワーカーとして登録することで `Cross-Origin-Opener-Policy` / `Cross-Origin-Embedder-Policy` ヘッダーをクライアント側で付与し、この制限を回避している。

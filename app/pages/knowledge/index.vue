@@ -4,6 +4,7 @@ import type { SearchResult } from '~/composables/useKnowledge'
 const {
   allNotes,
   allTags,
+  dbError,
   isEmbeddingLoading,
   isSearching,
   handleCreate,
@@ -43,6 +44,14 @@ function clearSearch() {
 
 <template>
   <UContainer class="py-8 max-w-3xl">
+    <UAlert
+      v-if="dbError"
+      color="error"
+      variant="subtle"
+      class="mb-6"
+      title="データベースエラー"
+      :description="dbError"
+    />
     <section class="mb-8">
       <h2 class="text-lg font-semibold mb-4">ナレッジ追加</h2>
       <KnowledgeAddForm
