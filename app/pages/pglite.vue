@@ -72,7 +72,12 @@ async function initializeDB() {
 
 async function insertNote(note: string) {
   loading.value = true
-  await pageInitPromise
+  try {
+    await pageInitPromise
+  } catch {
+    loading.value = false
+    return
+  }
   const id = crypto.randomUUID()
 
   const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-V2')
@@ -99,7 +104,11 @@ async function insertNote(note: string) {
 }
 
 async function resetNotes() {
-  await pageInitPromise
+  try {
+    await pageInitPromise
+  } catch {
+    return
+  }
   db.query('DELETE FROM notes').then(() => {
     console.log('Notes reset')
   })

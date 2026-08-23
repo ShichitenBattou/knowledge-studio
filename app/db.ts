@@ -100,8 +100,8 @@ async function createDB(baseURL: string): Promise<void> {
 }
 
 export async function initializeKnowledgeDB(): Promise<void> {
-  await startDB()
   try {
+    await startDB()
     await db.exec(`
         CREATE EXTENSION IF NOT EXISTS vector;
         CREATE TABLE IF NOT EXISTS notes (

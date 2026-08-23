@@ -1,4 +1,4 @@
-import { db, schemaReady, initializeKnowledgeDB } from '~/db'
+import { db, initializeKnowledgeDB } from '~/db'
 import { toPgVector } from '~/utility'
 import { useKnowledgeSearch } from './useKnowledgeSearch'
 
@@ -23,9 +23,12 @@ export function useKnowledge() {
   const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
   const { isSearching, searchNotes } = useKnowledgeSearch(generateEmbedding)
 
+  let initPromise: Promise<void> | null = null
+
   onMounted(async () => {
+    initPromise = initializeKnowledgeDB()
     try {
-      await initializeKnowledgeDB()
+      await initPromise
     } catch (err) {
       dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
       return
@@ -49,7 +52,7 @@ export function useKnowledge() {
   })
 
   async function handleCreate(text: string, tagNames: string[]): Promise<void> {
-    await schemaReady
+    await initPromise
     const noteId = crypto.randomUUID()
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
@@ -79,7 +82,7 @@ export function useKnowledge() {
   }
 
   async function handleUpdate(id: string, text: string, tagNames: string[]): Promise<void> {
-    await schemaReady
+    await initPromise
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
       await tx.query('UPDATE notes SET note = $1, embedding = $2 WHERE id = $3', [
@@ -109,19 +112,19 @@ export function useKnowledge() {
   }
 
   async function deleteNote(id: string): Promise<void> {
-    await schemaReady
+    await initPromise
     await db.query('DELETE FROM notes WHERE id = $1', [id])
   }
 
   async function deleteTag(tag: Tag): Promise<void> {
-    await schemaReady
+    await initPromise
     await db.query('DELETE FROM tags WHERE id = $1', [tag.id])
   }
 
   async function renameTag(id: string, name: string): Promise<void> {
     const trimmed = name.trim()
     if (!trimmed) return
-    await schemaReady
+    await initPromise
     await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
   }
 

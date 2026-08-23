@@ -17,8 +17,7 @@ vi.mock('../db', () => ({
     query: mockDbQuery,
     transaction: mockTransaction,
   },
-  schemaReady: Promise.resolve(),
-  initializeKnowledgeDB: vi.fn(),
+  initializeKnowledgeDB: vi.fn().mockResolvedValue(undefined),
 }))
 
 // useEmbedding は Nuxt auto-import のため vi.stubGlobal で提供する
