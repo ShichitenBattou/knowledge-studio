@@ -10,9 +10,17 @@ export const dbReady = new Promise<void>((resolve, reject) => {
   _resolveDbReady = resolve
   _rejectDbReady = reject
 })
-// Suppress unhandled-rejection events on routes that never await dbReady,
-// while still propagating the rejection to callers that do await it.
 dbReady.catch(() => {})
+
+let _resolveSchemaReady!: () => void
+let _rejectSchemaReady!: (err: Error) => void
+// schemaReady resolves after initializeKnowledgeDB() completes schema setup.
+// Mutation handlers should await this instead of dbReady.
+export const schemaReady = new Promise<void>((resolve, reject) => {
+  _resolveSchemaReady = resolve
+  _rejectSchemaReady = reject
+})
+schemaReady.catch(() => {})
 
 export const db = new Proxy({} as PGliteWithLive, {
   get(_target, prop) {
@@ -93,7 +101,8 @@ async function createDB(baseURL: string): Promise<void> {
 
 export async function initializeKnowledgeDB(): Promise<void> {
   await startDB()
-  await db.exec(`
+  try {
+    await db.exec(`
         CREATE EXTENSION IF NOT EXISTS vector;
         CREATE TABLE IF NOT EXISTS notes (
             id UUID PRIMARY KEY,
@@ -114,4 +123,10 @@ export async function initializeKnowledgeDB(): Promise<void> {
         CREATE INDEX IF NOT EXISTS note_tags_note_id_idx ON note_tags(note_id);
         CREATE INDEX IF NOT EXISTS note_tags_tag_id_idx ON note_tags(tag_id);
     `)
+    _resolveSchemaReady()
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    _rejectSchemaReady(error)
+    throw error
+  }
 }

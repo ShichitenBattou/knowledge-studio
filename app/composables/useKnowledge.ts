@@ -1,4 +1,4 @@
-import { db, dbReady, initializeKnowledgeDB } from '~/db'
+import { db, schemaReady, initializeKnowledgeDB } from '~/db'
 import { toPgVector } from '~/utility'
 import { useKnowledgeSearch } from './useKnowledgeSearch'
 
@@ -49,7 +49,7 @@ export function useKnowledge() {
   })
 
   async function handleCreate(text: string, tagNames: string[]): Promise<void> {
-    await dbReady
+    await schemaReady
     const noteId = crypto.randomUUID()
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
@@ -79,7 +79,7 @@ export function useKnowledge() {
   }
 
   async function handleUpdate(id: string, text: string, tagNames: string[]): Promise<void> {
-    await dbReady
+    await schemaReady
     const embedding = await generateEmbedding(text)
     await db.transaction(async (tx) => {
       await tx.query('UPDATE notes SET note = $1, embedding = $2 WHERE id = $3', [
@@ -109,19 +109,19 @@ export function useKnowledge() {
   }
 
   async function deleteNote(id: string): Promise<void> {
-    await dbReady
+    await schemaReady
     await db.query('DELETE FROM notes WHERE id = $1', [id])
   }
 
   async function deleteTag(tag: Tag): Promise<void> {
-    await dbReady
+    await schemaReady
     await db.query('DELETE FROM tags WHERE id = $1', [tag.id])
   }
 
   async function renameTag(id: string, name: string): Promise<void> {
     const trimmed = name.trim()
     if (!trimmed) return
-    await dbReady
+    await schemaReady
     await db.query('UPDATE tags SET name = $1 WHERE id = $2', [trimmed, id])
   }
 
