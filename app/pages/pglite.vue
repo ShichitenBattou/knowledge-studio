@@ -102,6 +102,7 @@ async function resetNotes() {
 }
 
 async function resetDB() {
+  await dbReady
   await db.exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
   await initializeDB()
   await initializeThisPage()

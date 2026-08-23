@@ -10,6 +10,9 @@ export const dbReady = new Promise<void>((resolve, reject) => {
   _resolveDbReady = resolve
   _rejectDbReady = reject
 })
+// Suppress unhandled-rejection events on routes that never await dbReady,
+// while still propagating the rejection to callers that do await it.
+dbReady.catch(() => {})
 
 export function rejectDB(err: Error): void {
   _rejectDbReady(err)

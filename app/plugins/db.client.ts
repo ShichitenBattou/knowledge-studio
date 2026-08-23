@@ -10,5 +10,6 @@ export default defineNuxtPlugin(() => {
   const { app } = useRuntimeConfig()
   // Non-blocking: db initializes in the background while the app mounts.
   // createDB rejects dbReady on failure so components can surface the error.
-  createDB(app.baseURL).catch(() => {})
+  // The local catch just prevents an extra unhandled-rejection; dbReady carries the error.
+  createDB(app.baseURL).catch((err) => console.error('[db] initialization failed:', err))
 })
