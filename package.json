@@ -7,7 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare && lefthook install && node -e \"require('fs').copyFileSync('node_modules/coi-serviceworker/coi-serviceworker.js','public/coi-serviceworker.js')\"",
+    "postinstall": "nuxt prepare && lefthook install && node -e \"require('fs').copyFileSync(require.resolve('coi-serviceworker/coi-serviceworker.js'),'public/coi-serviceworker.js')\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

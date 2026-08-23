@@ -8,7 +8,8 @@ const state: { db: PGliteWithLive | null } = { db: null }
 export const db = new Proxy({} as PGliteWithLive, {
   get(_target, prop) {
     if (!state.db) throw new Error('DB not initialized')
-    return Reflect.get(state.db, prop, state.db)
+    const value = Reflect.get(state.db, prop, state.db)
+    return typeof value === 'function' ? value.bind(state.db) : value
   },
 })
 
