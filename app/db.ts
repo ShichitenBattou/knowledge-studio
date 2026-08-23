@@ -41,6 +41,7 @@ export function configureDB(baseURL: string): void {
 export function rejectDB(err: Error): void {
   _terminalError = err
   _rejectDbReady(err)
+  _rejectSchemaReady(err)
 }
 
 export function startDB(): Promise<void> {
