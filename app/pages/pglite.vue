@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { pipeline } from '@huggingface/transformers'
 import { toPgVector } from '~/utility'
-import { db, dbReady, startDB } from '~/db'
+import { db, startDB } from '~/db'
 import { v4 as uuidv4 } from 'uuid'
 
 const note = ref('')
 const notes = reactive<Note[]>([])
 const loading = ref(false)
 const dbError = ref<string | null>(null)
+
+let pageInitPromise: Promise<void> | null = null
 
 class Note {
   id: string = uuidv4()
@@ -33,7 +35,8 @@ class Note {
 
 onMounted(async () => {
   try {
-    await initializeDB()
+    pageInitPromise = initializeDB()
+    await pageInitPromise
     await initializeThisPage()
   } catch (err) {
     dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
@@ -69,7 +72,7 @@ async function initializeDB() {
 
 async function insertNote(note: string) {
   loading.value = true
-  await dbReady
+  await pageInitPromise
   const id = crypto.randomUUID()
 
   const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-V2')
@@ -96,16 +99,19 @@ async function insertNote(note: string) {
 }
 
 async function resetNotes() {
-  await dbReady
+  await pageInitPromise
   db.query('DELETE FROM notes').then(() => {
     console.log('Notes reset')
   })
 }
 
 async function resetDB() {
-  await dbReady
-  await db.exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
-  await initializeDB()
+  await pageInitPromise
+  pageInitPromise = (async () => {
+    await db.exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
+    await initializeDB()
+  })()
+  await pageInitPromise
   await initializeThisPage()
   console.log('Database reset')
 }
