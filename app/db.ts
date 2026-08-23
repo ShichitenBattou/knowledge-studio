@@ -14,10 +14,6 @@ export const dbReady = new Promise<void>((resolve, reject) => {
 // while still propagating the rejection to callers that do await it.
 dbReady.catch(() => {})
 
-export function rejectDB(err: Error): void {
-  _rejectDbReady(err)
-}
-
 export const db = new Proxy({} as PGliteWithLive, {
   get(_target, prop) {
     if (!state.db) throw new Error('DB not initialized')
@@ -28,15 +24,26 @@ export const db = new Proxy({} as PGliteWithLive, {
 
 let _baseURL: string | null = null
 let _startPromise: Promise<void> | null = null
+let _terminalError: Error | null = null
 
 export function configureDB(baseURL: string): void {
   _baseURL = baseURL
 }
 
+export function rejectDB(err: Error): void {
+  _terminalError = err
+  _rejectDbReady(err)
+}
+
 export function startDB(): Promise<void> {
   if (!_startPromise) {
-    if (!_baseURL) {
+    if (_terminalError) {
+      // Already terminally rejected (e.g. crossOriginIsolated check failed); propagate original error.
+      _startPromise = Promise.reject(_terminalError)
+      _startPromise.catch(() => {})
+    } else if (!_baseURL) {
       const err = new Error('DB not configured: configureDB must be called first')
+      _terminalError = err
       _rejectDbReady(err)
       _startPromise = Promise.reject(err)
       _startPromise.catch(() => {})

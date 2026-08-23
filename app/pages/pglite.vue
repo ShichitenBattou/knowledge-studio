@@ -37,6 +37,7 @@ onMounted(async () => {
     await initializeThisPage()
   } catch (err) {
     dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
+    loading.value = false
   }
 })
 
@@ -60,14 +61,10 @@ async function initializeThisPage() {
 async function initializeDB() {
   loading.value = true
   await startDB()
-  db.query('CREATE EXTENSION IF NOT EXISTS vector').then(() => {
-    console.log('Vector extension created')
-  })
-  db.query(
+  await db.query('CREATE EXTENSION IF NOT EXISTS vector')
+  await db.query(
     'CREATE TABLE IF NOT EXISTS notes (id UUID PRIMARY KEY, note TEXT NOT NULL, embedding vector(384))',
-  ).then(() => {
-    console.log('Table created')
-  })
+  )
 }
 
 async function insertNote(note: string) {
