@@ -5,9 +5,15 @@ import { vector } from '@electric-sql/pglite/vector'
 const state: { db: PGliteWithLive | null } = { db: null }
 
 let _resolveDbReady!: () => void
-export const dbReady = new Promise<void>((resolve) => {
+let _rejectDbReady!: (err: Error) => void
+export const dbReady = new Promise<void>((resolve, reject) => {
   _resolveDbReady = resolve
+  _rejectDbReady = reject
 })
+
+export function rejectDB(err: Error): void {
+  _rejectDbReady(err)
+}
 
 export const db = new Proxy({} as PGliteWithLive, {
   get(_target, prop) {
@@ -18,34 +24,40 @@ export const db = new Proxy({} as PGliteWithLive, {
 })
 
 export async function createDB(baseURL: string): Promise<void> {
-  const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
-    WebAssembly.compileStreaming(fetch(`${baseURL}pglite/pglite.wasm`)),
-    WebAssembly.compileStreaming(fetch(`${baseURL}pglite/initdb.wasm`)),
-    fetch(`${baseURL}pglite/pglite.data`).then((r) => r.blob()),
-  ])
+  try {
+    const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
+      WebAssembly.compileStreaming(fetch(`${baseURL}pglite/pglite.wasm`)),
+      WebAssembly.compileStreaming(fetch(`${baseURL}pglite/initdb.wasm`)),
+      fetch(`${baseURL}pglite/pglite.data`).then((r) => r.blob()),
+    ])
 
-  const vectorWithPublicPath = {
-    name: vector.name,
-    setup: async (pg: PGlite, opts: Record<string, unknown>) => {
-      const result = await vector.setup(pg, opts)
-      return {
-        ...result,
-        bundlePath: new URL(`${baseURL}pglite/vector.tar.gz`, location.href),
-      }
-    },
+    const vectorWithPublicPath = {
+      name: vector.name,
+      setup: async (pg: PGlite, opts: Record<string, unknown>) => {
+        const result = await vector.setup(pg, opts)
+        return {
+          ...result,
+          bundlePath: new URL(`${baseURL}pglite/vector.tar.gz`, location.href),
+        }
+      },
+    }
+
+    state.db = await PGlite.create({
+      pgliteWasmModule,
+      initdbWasmModule,
+      fsBundle,
+      extensions: {
+        live,
+        vector: vectorWithPublicPath,
+      },
+      dataDir: 'idb://knowledge-studio-pglite',
+    })
+    _resolveDbReady()
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    _rejectDbReady(error)
+    throw error
   }
-
-  state.db = await PGlite.create({
-    pgliteWasmModule,
-    initdbWasmModule,
-    fsBundle,
-    extensions: {
-      live,
-      vector: vectorWithPublicPath,
-    },
-    dataDir: 'idb://knowledge-studio-pglite',
-  })
-  _resolveDbReady()
 }
 
 export async function initializeKnowledgeDB(): Promise<void> {

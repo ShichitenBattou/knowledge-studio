@@ -68,7 +68,7 @@ async function initializeDB() {
 
 async function insertNote(note: string) {
   loading.value = true
-
+  await dbReady
   const id = crypto.randomUUID()
 
   const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-V2')
@@ -94,7 +94,8 @@ async function insertNote(note: string) {
     })
 }
 
-function resetNotes() {
+async function resetNotes() {
+  await dbReady
   db.query('DELETE FROM notes').then(() => {
     console.log('Notes reset')
   })
