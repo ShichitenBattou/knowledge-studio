@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { pipeline } from '@huggingface/transformers'
 import { toPgVector } from '~/utility'
-import { db } from '~/db'
+import { db, dbReady } from '~/db'
 import { v4 as uuidv4 } from 'uuid'
 
 const note = ref('')
@@ -55,11 +55,10 @@ async function initializeThisPage() {
 
 async function initializeDB() {
   loading.value = true
-
+  await dbReady
   db.query('CREATE EXTENSION IF NOT EXISTS vector').then(() => {
     console.log('Vector extension created')
   })
-
   db.query(
     'CREATE TABLE IF NOT EXISTS notes (id UUID PRIMARY KEY, note TEXT NOT NULL, embedding vector(384))',
   ).then(() => {

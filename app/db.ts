@@ -4,7 +4,11 @@ import { vector } from '@electric-sql/pglite/vector'
 
 const state: { db: PGliteWithLive | null } = { db: null }
 
-// db is guaranteed to be set before any component mounts (see app/plugins/db.client.ts)
+let _resolveDbReady!: () => void
+export const dbReady = new Promise<void>((resolve) => {
+  _resolveDbReady = resolve
+})
+
 export const db = new Proxy({} as PGliteWithLive, {
   get(_target, prop) {
     if (!state.db) throw new Error('DB not initialized')
@@ -41,9 +45,11 @@ export async function createDB(baseURL: string): Promise<void> {
     },
     dataDir: 'idb://knowledge-studio-pglite',
   })
+  _resolveDbReady()
 }
 
 export async function initializeKnowledgeDB(): Promise<void> {
+  await dbReady
   await db.exec(`
         CREATE EXTENSION IF NOT EXISTS vector;
         CREATE TABLE IF NOT EXISTS notes (
