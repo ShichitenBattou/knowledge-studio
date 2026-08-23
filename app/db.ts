@@ -26,7 +26,28 @@ export const db = new Proxy({} as PGliteWithLive, {
   },
 })
 
-export async function createDB(baseURL: string): Promise<void> {
+let _baseURL: string | null = null
+let _startPromise: Promise<void> | null = null
+
+export function configureDB(baseURL: string): void {
+  _baseURL = baseURL
+}
+
+export function startDB(): Promise<void> {
+  if (!_startPromise) {
+    if (!_baseURL) {
+      const err = new Error('DB not configured: configureDB must be called first')
+      _rejectDbReady(err)
+      _startPromise = Promise.reject(err)
+      _startPromise.catch(() => {})
+    } else {
+      _startPromise = createDB(_baseURL)
+    }
+  }
+  return _startPromise
+}
+
+async function createDB(baseURL: string): Promise<void> {
   try {
     const [pgliteWasmModule, initdbWasmModule, fsBundle] = await Promise.all([
       WebAssembly.compileStreaming(fetch(`${baseURL}pglite/pglite.wasm`)),
@@ -64,7 +85,7 @@ export async function createDB(baseURL: string): Promise<void> {
 }
 
 export async function initializeKnowledgeDB(): Promise<void> {
-  await dbReady
+  await startDB()
   await db.exec(`
         CREATE EXTENSION IF NOT EXISTS vector;
         CREATE TABLE IF NOT EXISTS notes (

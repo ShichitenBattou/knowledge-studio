@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { pipeline } from '@huggingface/transformers'
 import { toPgVector } from '~/utility'
-import { db, dbReady } from '~/db'
+import { db, dbReady, startDB } from '~/db'
 import { v4 as uuidv4 } from 'uuid'
 
 const note = ref('')
 const notes = reactive<Note[]>([])
 const loading = ref(false)
+const dbError = ref<string | null>(null)
 
 class Note {
   id: string = uuidv4()
@@ -31,9 +32,12 @@ class Note {
 }
 
 onMounted(async () => {
-  await initializeDB()
-
-  await initializeThisPage()
+  try {
+    await initializeDB()
+    await initializeThisPage()
+  } catch (err) {
+    dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
+  }
 })
 
 async function initializeThisPage() {
@@ -55,7 +59,7 @@ async function initializeThisPage() {
 
 async function initializeDB() {
   loading.value = true
-  await dbReady
+  await startDB()
   db.query('CREATE EXTENSION IF NOT EXISTS vector').then(() => {
     console.log('Vector extension created')
   })
@@ -131,6 +135,15 @@ const columns = [
 <template>
   <UContainer>
     <h1>PGlite</h1>
+
+    <UAlert
+      v-if="dbError"
+      color="error"
+      variant="subtle"
+      class="mb-4"
+      title="データベースエラー"
+      :description="dbError"
+    />
 
     <UContainer class="pb-3">
       <ULabel>Insert a note:</ULabel>

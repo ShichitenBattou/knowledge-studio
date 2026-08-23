@@ -19,11 +19,17 @@ export interface Note {
 export function useKnowledge() {
   const allNotes = reactive<Note[]>([])
   const allTags = reactive<Tag[]>([])
+  const dbError = ref<string | null>(null)
   const { generateEmbedding, isLoading: isEmbeddingLoading } = useEmbedding()
   const { isSearching, searchNotes } = useKnowledgeSearch(generateEmbedding)
 
   onMounted(async () => {
-    await initializeKnowledgeDB()
+    try {
+      await initializeKnowledgeDB()
+    } catch (err) {
+      dbError.value = err instanceof Error ? err.message : 'データベースの初期化に失敗しました'
+      return
+    }
     db.live.query<Note>(
       `SELECT n.id, n.note, n.created_at,
                     COALESCE(array_agg(t.name ORDER BY t.name) FILTER (WHERE t.name IS NOT NULL), '{}') AS tags
@@ -122,6 +128,7 @@ export function useKnowledge() {
   return {
     allNotes,
     allTags,
+    dbError,
     isEmbeddingLoading,
     isSearching,
     handleCreate,

@@ -17,6 +17,7 @@ vi.mock('../db', () => ({
     query: mockDbQuery,
     transaction: mockTransaction,
   },
+  dbReady: Promise.resolve(),
   initializeKnowledgeDB: vi.fn(),
 }))
 

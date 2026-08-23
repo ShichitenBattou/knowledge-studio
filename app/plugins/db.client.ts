@@ -1,4 +1,4 @@
-import { createDB, rejectDB } from '~/db'
+import { configureDB, rejectDB } from '~/db'
 
 export default defineNuxtPlugin(() => {
   if (typeof crossOriginIsolated === 'undefined' || !crossOriginIsolated) {
@@ -8,8 +8,7 @@ export default defineNuxtPlugin(() => {
     return
   }
   const { app } = useRuntimeConfig()
-  // Non-blocking: db initializes in the background while the app mounts.
-  // createDB rejects dbReady on failure so components can surface the error.
-  // The local catch just prevents an extra unhandled-rejection; dbReady carries the error.
-  createDB(app.baseURL).catch((err) => console.error('[db] initialization failed:', err))
+  // Store the base URL without starting PGlite yet.
+  // DB initialization is deferred to the first call of startDB() from a DB-backed route.
+  configureDB(app.baseURL)
 })
