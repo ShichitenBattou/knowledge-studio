@@ -8,6 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./test/vitest-setup.ts'],
+    exclude: ['**/node_modules/**', '**/.claude/worktrees/**'],
   },
   resolve: {
     alias: {

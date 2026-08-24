@@ -33,6 +33,7 @@ describe('useRag', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     _resetRagForTest()
+    vi.stubGlobal('navigator', { gpu: {} })
     mockSearchFn.mockResolvedValue(MOCK_RESULTS)
     mockChatCreate.mockReturnValue(makeAsyncStream(['回答', 'テキスト']))
     mockCreateMLCEngine.mockResolvedValue({
@@ -42,6 +43,7 @@ describe('useRag', () => {
 
   afterEach(() => {
     _resetRagForTest()
+    vi.unstubAllGlobals()
   })
 
   describe('loadModel', () => {
@@ -71,7 +73,16 @@ describe('useRag', () => {
       await loadModel('Qwen2.5-1.5B-Instruct-q4f16_1-MLC')
       expect(isModelLoaded.value).toBe(false)
       expect(isModelLoading.value).toBe(false)
-      expect(modelLoadError.value).toBe('モデルのロードに失敗しました')
+      expect(modelLoadError.value).toBe('モデルのロードに失敗しました: WebGPU not supported')
+    })
+
+    it('WebGPUが利用できない場合は modelLoadError をセットしエンジンをロードしない', async () => {
+      vi.stubGlobal('navigator', {})
+      const { loadModel, isModelLoaded, modelLoadError } = useRag(mockSearchFn)
+      await loadModel('Qwen2.5-1.5B-Instruct-q4f16_1-MLC')
+      expect(mockCreateMLCEngine).not.toHaveBeenCalled()
+      expect(isModelLoaded.value).toBe(false)
+      expect(modelLoadError.value).toContain('WebGPUが利用できません')
     })
 
     it('initProgressCallback でモデルロード進捗が更新される', async () => {
