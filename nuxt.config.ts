@@ -14,7 +14,7 @@ export default defineNuxtConfig({
           // causing PGlite to access process.exitCode → ReferenceError in browsers.
           // Injecting a minimal process object before bundles load prevents that.
           innerHTML:
-            'window.process=window.process||{env:{},argv:[],versions:{},version:"v18",platform:"browser",browser:true,exitCode:0}',
+            'globalThis.process=globalThis.process||{env:{},argv:[],versions:{},version:"v18",platform:"browser",browser:true,exitCode:0}',
         },
         { src: `${baseURL}coi-serviceworker.js` },
       ],
