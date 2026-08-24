@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import { defineConfig } from 'vitest/config'
+import { defaultExclude, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [vue()],
@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./test/vitest-setup.ts'],
-    exclude: ['**/node_modules/**', '**/.claude/worktrees/**'],
+    exclude: [...defaultExclude, '**/.claude/worktrees/**'],
   },
   resolve: {
     alias: {

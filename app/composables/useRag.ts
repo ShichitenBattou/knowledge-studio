@@ -61,7 +61,7 @@ export function useRag(searchFn: (query: string, topK: number) => Promise<Search
 
   async function loadModel(modelId: RagModelId) {
     if (_isModelLoading.value) return
-    if (!navigator.gpu) {
+    if (typeof navigator === 'undefined' || !navigator.gpu) {
       _modelLoadError.value =
         'WebGPUが利用できません。Chrome/Edge など WebGPU 対応ブラウザをお使いください。詳細: https://webgpureport.org/'
       return
