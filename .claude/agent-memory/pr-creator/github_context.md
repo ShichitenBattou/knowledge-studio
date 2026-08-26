@@ -19,11 +19,14 @@ metadata:
 
 ## PR Creation Notes
 
+- Branch must be pushed to remote before PR creation (API validation requirement)
 - The `mcp__github__create_pull_request` tool does not have a `reviewers` parameter
 - Reviewers must be added via `gh pr edit` or `mcp__github__update_pull_request` after PR creation
 - "Copilot" is not a valid GitHub user login and cannot be added as a reviewer via standard GitHub API
 - Use actual GitHub usernames when adding reviewers
-- Always include `Closes #<ISSUE_NUMBER>` in the PR body for automatic issue closure
+- Always include `Closes #<ISSUE_NUMBER>` in the PR body for automatic issue closure (when issue exists)
+- For PRs without an associated issue number, `Closes #` is optional/not needed
+- Request Copilot code review via `mcp__github__request_copilot_review` after PR creation (NOT via reviewers array)
 
 ## ADR Index Files
 

@@ -25,3 +25,6 @@ public/coi-serviceworker.js
 .env
 .env.*
 !.env.example
+
+# Claude Code worktrees
+.claude/worktrees/
